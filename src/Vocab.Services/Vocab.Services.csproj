@@ -7,7 +7,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Vocab.Core\Vocab.Core.csproj" />
+    <ProjectReference Include="..\Vocab.Abstractions\Vocab.Abstractions.csproj" />
   </ItemGroup>
 
 </Project>
