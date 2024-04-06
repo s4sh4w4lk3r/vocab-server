@@ -7,6 +7,11 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Folder Include="Abstractions\" />
+    <Folder Include="Validators\" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\Vocab.Core\Vocab.Core.csproj" />
   </ItemGroup>
 

@@ -3,13 +3,13 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.0.31903.59
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Vocab.Abstractions", "Vocab.Abstractions\Vocab.Abstractions.csproj", "{E53D2E90-7393-4870-B7FF-995327C6FCD6}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Vocab.Core", "Vocab.Core\Vocab.Core.csproj", "{A7D87442-2DEB-4AC5-B5FF-ADCC99FFD5B3}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Vocab.Services", "Vocab.Services\Vocab.Services.csproj", "{9F2D566C-FEA6-4940-9059-FF07AEF1E64F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Vocab.WebApi", "Vocab.WebApi\Vocab.WebApi.csproj", "{15C1DB29-3057-456B-A8D1-92CBD886CF3F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Vocab.Core", "Vocab.Core\Vocab.Core.csproj", "{A7D87442-2DEB-4AC5-B5FF-ADCC99FFD5B3}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Vocab.Infrastructure", "Vocab.Infrastructure\Vocab.Infrastructure.csproj", "{915FC8A4-2AB8-4EDF-B231-07884E56D8D6}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Vocab.WebApi", "Vocab.WebApi\Vocab.WebApi.csproj", "{15C1DB29-3057-456B-A8D1-92CBD886CF3F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Vocab.Application", "Vocab.Application\Vocab.Application.csproj", "{EE4F29E1-BFC6-4407-8973-E71A6BE558B9}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -17,14 +17,6 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{E53D2E90-7393-4870-B7FF-995327C6FCD6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{E53D2E90-7393-4870-B7FF-995327C6FCD6}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{E53D2E90-7393-4870-B7FF-995327C6FCD6}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{E53D2E90-7393-4870-B7FF-995327C6FCD6}.Release|Any CPU.Build.0 = Release|Any CPU
-		{9F2D566C-FEA6-4940-9059-FF07AEF1E64F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{9F2D566C-FEA6-4940-9059-FF07AEF1E64F}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{9F2D566C-FEA6-4940-9059-FF07AEF1E64F}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{9F2D566C-FEA6-4940-9059-FF07AEF1E64F}.Release|Any CPU.Build.0 = Release|Any CPU
 		{A7D87442-2DEB-4AC5-B5FF-ADCC99FFD5B3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{A7D87442-2DEB-4AC5-B5FF-ADCC99FFD5B3}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A7D87442-2DEB-4AC5-B5FF-ADCC99FFD5B3}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -33,6 +25,14 @@ Global
 		{15C1DB29-3057-456B-A8D1-92CBD886CF3F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{15C1DB29-3057-456B-A8D1-92CBD886CF3F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{15C1DB29-3057-456B-A8D1-92CBD886CF3F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{915FC8A4-2AB8-4EDF-B231-07884E56D8D6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{915FC8A4-2AB8-4EDF-B231-07884E56D8D6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{915FC8A4-2AB8-4EDF-B231-07884E56D8D6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{915FC8A4-2AB8-4EDF-B231-07884E56D8D6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EE4F29E1-BFC6-4407-8973-E71A6BE558B9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EE4F29E1-BFC6-4407-8973-E71A6BE558B9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EE4F29E1-BFC6-4407-8973-E71A6BE558B9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EE4F29E1-BFC6-4407-8973-E71A6BE558B9}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
