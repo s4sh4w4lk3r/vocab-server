@@ -1,3 +1,10 @@
+using Microsoft.AspNetCore.HttpOverrides;
+using Microsoft.Extensions.Options;
+using Serilog;
+using Throw;
+using Vocab.Application.Configuration;
+using Vocab.Infrastructure.Persistence;
+
 namespace Vocab.WebApi
 {
     public class Program
@@ -5,12 +12,62 @@ namespace Vocab.WebApi
         public static void Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
-            var app = builder.Build();
 
-            app.MapGet("/", () => "Hello World!");
+            builder.Host.UseSerilog((ctx, lc) => lc.WriteTo.Console()
+            .WriteTo.File($"./logs/log.log", rollingInterval: RollingInterval.Day)
+            .ReadFrom.Configuration(ctx.Configuration));
+
+            ConfigureServices(builder);
+            ConfigureOptions(builder);
+
+            // -------------------------------------------------------------------------- >8
+
+            var app = builder.Build();
+            ConfigureMiddlewares(app);
+
+            app.MapControllers();
+
+            Test(app);
+
 
             app.Run();
         }
+        private static void ConfigureOptions(WebApplicationBuilder builder)
+        {
+            builder.Services.Configure<ForwardedHeadersOptions>(options =>
+            {
+                options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto | ForwardedHeaders.XForwardedHost;
+            });
+
+            builder.Services.Configure<PostgresConfiguration>(builder.Configuration.GetRequiredSection(nameof(PostgresConfiguration)));
+            builder.Services.Configure<CorsConfiguration>(builder.Configuration.GetRequiredSection(nameof(CorsConfiguration)));
+        }
+        private static void ConfigureServices(WebApplicationBuilder builder)
+        {
+            builder.Services.AddControllers();
+            builder.Services.AddDbContext<VocabDbContext>(contextLifetime: ServiceLifetime.Scoped, optionsLifetime: ServiceLifetime.Scoped);
+        }
+        private static void ConfigureMiddlewares(WebApplication app)
+        {
+            app.UseForwardedHeaders();
+
+            /*app.UseAuthentication();
+            app.UseAuthorization();*/
+
+            var origins = app.Services.GetRequiredService<IOptions<CorsConfiguration>>().Value.Origins;
+            app.UseCors(o => o.AllowAnyMethod().AllowAnyHeader().WithOrigins(origins));
+        }
+        private static void Test(WebApplication app)
+        {
+            using var scope = app.Services.CreateScope();
+
+            var logger = scope.ServiceProvider.GetRequiredService<ILoggerFactory>().CreateLogger<Program>();
+            var db = scope.ServiceProvider.GetRequiredService<VocabDbContext>();
+
+
+            db.Database.CanConnect().Throw(_ => new InvalidOperationException("Не получилось подключиться к базе данных.")).IfFalse();
+            // TODO: добавить проверку кейклока через http.
+        }
     }
 }
-// https://private-user-images.githubusercontent.com/47791892/247092894-39b3d800-fecf-4c5a-b702-9f767ee03169.png?jwt=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJnaXRodWIuY29tIiwiYXVkIjoicmF3LmdpdGh1YnVzZXJjb250ZW50LmNvbSIsImtleSI6ImtleTUiLCJleHAiOjE3MTI0MTQwMjMsIm5iZiI6MTcxMjQxMzcyMywicGF0aCI6Ii80Nzc5MTg5Mi8yNDcwOTI4OTQtMzliM2Q4MDAtZmVjZi00YzVhLWI3MDItOWY3NjdlZTAzMTY5LnBuZz9YLUFtei1BbGdvcml0aG09QVdTNC1ITUFDLVNIQTI1NiZYLUFtei1DcmVkZW50aWFsPUFLSUFWQ09EWUxTQTUzUFFLNFpBJTJGMjAyNDA0MDYlMkZ1cy1lYXN0LTElMkZzMyUyRmF3czRfcmVxdWVzdCZYLUFtei1EYXRlPTIwMjQwNDA2VDE0Mjg0M1omWC1BbXotRXhwaXJlcz0zMDAmWC1BbXotU2lnbmF0dXJlPWQyMDBhZTAwOTY2ZTRlYjI1OWQ2MDhiYzc4YzE2NmJmM2M5N2E4MDVmYmUyZWViZGNiYjc0MjEwMzgzZjdjNjQmWC1BbXotU2lnbmVkSGVhZGVycz1ob3N0JmFjdG9yX2lkPTAma2V5X2lkPTAmcmVwb19pZD0wIn0.OPTTtGec03mLscc4g8Z9V19jP8LLvjILisVExVLcXwE
+// https://github.com/edinSahbaz/clean-api-template?tab=readme-ov-file
