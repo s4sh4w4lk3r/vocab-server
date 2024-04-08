@@ -2,15 +2,15 @@
 
 namespace Vocab.Core.Entities
 {
-    public class User(Guid guid, string username, string firstname, string lastname, string email, bool isEmailVerified, List<string> roles)
+    public class User
     {
-        public Guid Guid { get; init; } = guid;
-        public string Username { get; init; } = username;
-        public string Firstname { get; init; } = firstname;
-        public string Lastname { get; init; } = lastname;
-        public string Email { get; init; } = email;
-        public bool IsEmailVerified { get; init; } = isEmailVerified;
-        public ReadOnlyCollection<string> Roles { get; init; } = roles.AsReadOnly();
+        public required Guid Id { get; init; }
+        public required string Username { get; init; }
+        public required string Firstname { get; init; }
+        public required string Lastname { get; init; }
+        public required string Email { get; init; }
+        public required bool IsEmailVerified { get; init; }
+        public required ReadOnlyCollection<string> Roles { get; init; }
 
         public bool IsInRole(string roleName) => Roles.Contains(roleName);
     }

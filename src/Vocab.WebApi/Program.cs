@@ -45,7 +45,7 @@ namespace Vocab.WebApi
         private static void ConfigureServices(WebApplicationBuilder builder)
         {
             builder.Services.AddControllers();
-            builder.Services.AddDbContext<VocabDbContext>(contextLifetime: ServiceLifetime.Scoped, optionsLifetime: ServiceLifetime.Scoped);
+            builder.Services.AddDbContext<VocabContext>(contextLifetime: ServiceLifetime.Scoped, optionsLifetime: ServiceLifetime.Scoped);
         }
         private static void ConfigureMiddlewares(WebApplication app)
         {
@@ -62,10 +62,11 @@ namespace Vocab.WebApi
             using var scope = app.Services.CreateScope();
 
             var logger = scope.ServiceProvider.GetRequiredService<ILoggerFactory>().CreateLogger<Program>();
-            var db = scope.ServiceProvider.GetRequiredService<VocabDbContext>();
+            var db = scope.ServiceProvider.GetRequiredService<VocabContext>();
 
 
             db.Database.CanConnect().Throw(_ => new InvalidOperationException("Не получилось подключиться к базе данных.")).IfFalse();
+            db.Database.EnsureCreated();
             // TODO: добавить проверку кейклока через http.
         }
     }

@@ -2,10 +2,11 @@
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Vocab.Application.Configuration;
+using Vocab.Core.Entities;
 
 namespace Vocab.Infrastructure.Persistence
 {
-    public class VocabDbContext(IOptions<PostgresConfiguration> options, ILoggerFactory loggerFactory) : DbContext
+    public class VocabContext(IOptions<PostgresConfiguration> options, ILoggerFactory loggerFactory) : DbContext
     {
         private readonly PostgresConfiguration _configuration = options.Value ?? throw new ArgumentNullException(nameof(options), "Параметры подключения к БД не получены.");
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
@@ -15,9 +16,21 @@ namespace Vocab.Infrastructure.Persistence
             optionsBuilder.UseNpgsql(_configuration.ConnectionString, options => options.MigrationsAssembly("Vocab.WebApi"));
         }
 
+        public DbSet<StatementPair> StatementPairs => Set<StatementPair>();
+        public DbSet<StatementDictionary> StatementDictionaries => Set<StatementDictionary>();
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            base.OnModelCreating(modelBuilder);
+            modelBuilder.Entity<StatementPair>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.HasOne(e => e.StatementsDictionary).WithMany(e => e.StatementPairs).HasForeignKey(e => e.RelatedDictionaryId).OnDelete(DeleteBehavior.Restrict);
+            });
+
+            modelBuilder.Entity<StatementDictionary>(e =>
+            {
+                e.HasKey(e => e.Id);
+            });
         }
     }
 }
