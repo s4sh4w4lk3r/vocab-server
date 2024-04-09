@@ -9,7 +9,7 @@ namespace Vocab.Core.Entities
     public class StatementPair : ILastModifiedEntity
     {
         public required ulong Id { get; init; }
-        public required string Origin { get; init; }
+        public required string Source { get; init; }
         public required string Target { get; init; }
         public required StatementCategory StatementCategory { get; init; }
         public required DateTime LastModified { get; init; }
