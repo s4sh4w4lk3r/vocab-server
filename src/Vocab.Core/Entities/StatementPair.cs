@@ -4,7 +4,7 @@ using Vocab.Core.Enums;
 namespace Vocab.Core.Entities
 {
     /// <summary>
-    /// Пара фраз, слов.
+    /// Включает в себя оригинал и перевод выражения.
     /// </summary>
     public class StatementPair : ILastModifiedEntity
     {

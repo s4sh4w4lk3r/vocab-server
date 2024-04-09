@@ -1,8 +1,12 @@
+using HotChocolate.Types;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.Extensions.Options;
+using Microsoft.OpenApi.Models;
 using Serilog;
+using System.Reflection;
 using Throw;
 using Vocab.Application.Configuration;
+using Vocab.Infrastructure.GraphQL;
 using Vocab.Infrastructure.Persistence;
 
 namespace Vocab.WebApi
@@ -13,27 +17,64 @@ namespace Vocab.WebApi
         {
             var builder = WebApplication.CreateBuilder(args);
 
+            // -------------------------------------------------------------------------------------------------------------------------- >8
+
             builder.Host.UseSerilog((ctx, lc) => lc.WriteTo.Console()
             .WriteTo.File($"./logs/log.log", rollingInterval: RollingInterval.Day)
             .ReadFrom.Configuration(ctx.Configuration));
 
-            ConfigureServices(builder);
-            ConfigureOptions(builder);
+            // -------------------------------------------------------------------------------------------------------------------------- >8
 
-            // -------------------------------------------------------------------------- >8
+            builder.Services.AddControllers();
+            builder.Services.AddDbContext<VocabContext>(contextLifetime: ServiceLifetime.Scoped, optionsLifetime: ServiceLifetime.Scoped);
 
-            var app = builder.Build();
-            ConfigureMiddlewares(app);
+            builder.Services.AddGraphQLServer()
+            .ModifyOptions(options => { options.DefaultBindingBehavior = BindingBehavior.Implicit; })
+            .AllowIntrospection(builder.Environment.IsDevelopment())
+            .ModifyRequestOptions(o => o.OnlyAllowPersistedQueries = !builder.Environment.IsDevelopment())
+            .UsePersistedQueryPipeline().AddReadOnlyFileSystemQueryStorage("./../Vocab.Infrastructure/GraphQL/PersistedQueries")
+            .AddQueryType<Query>().AddProjections().AddFiltering().AddSorting().AddAuthorization();
 
-            app.MapControllers();
+            builder.Services.AddSwaggerGen(options =>
+            {
+                options.SwaggerDoc("v1", new OpenApiInfo
+                {
+                    Version = "v1",
+                    Title = "Timetable WebApi",
+                    Description = "Timetable WebApi"
+                });
 
-            Test(app);
+                var xmlFilename = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
+                options.IncludeXmlComments(Path.Combine(AppContext.BaseDirectory, xmlFilename));
 
+                options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+                {
+                    In = ParameterLocation.Header,
+                    Description = "Please enter a valid token",
+                    Name = "Authorization",
+                    Type = SecuritySchemeType.Http,
+                    BearerFormat = "JWT",
+                    Scheme = "Bearer"
+                });
 
-            app.Run();
-        }
-        private static void ConfigureOptions(WebApplicationBuilder builder)
-        {
+                options.AddSecurityRequirement(new OpenApiSecurityRequirement
+                {
+                    {
+                        new OpenApiSecurityScheme
+                        {
+                            Reference = new OpenApiReference
+                            {
+                                Type=ReferenceType.SecurityScheme,
+                                Id="Bearer"
+                            }
+                        },
+                        new string[]{}
+                    }
+                });
+            });
+
+            // -------------------------------------------------------------------------------------------------------------------------- >8
+
             builder.Services.Configure<ForwardedHeadersOptions>(options =>
             {
                 options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto | ForwardedHeaders.XForwardedHost;
@@ -41,14 +82,13 @@ namespace Vocab.WebApi
 
             builder.Services.Configure<PostgresConfiguration>(builder.Configuration.GetRequiredSection(nameof(PostgresConfiguration)));
             builder.Services.Configure<CorsConfiguration>(builder.Configuration.GetRequiredSection(nameof(CorsConfiguration)));
-        }
-        private static void ConfigureServices(WebApplicationBuilder builder)
-        {
-            builder.Services.AddControllers();
-            builder.Services.AddDbContext<VocabContext>(contextLifetime: ServiceLifetime.Scoped, optionsLifetime: ServiceLifetime.Scoped);
-        }
-        private static void ConfigureMiddlewares(WebApplication app)
-        {
+
+            // -------------------------------------------------------------------------------------------------------------------------- >8
+
+            var app = builder.Build();
+
+            // -------------------------------------------------------------------------------------------------------------------------- >8
+
             app.UseForwardedHeaders();
 
             /*app.UseAuthentication();
@@ -56,18 +96,30 @@ namespace Vocab.WebApi
 
             var origins = app.Services.GetRequiredService<IOptions<CorsConfiguration>>().Value.Origins;
             app.UseCors(o => o.AllowAnyMethod().AllowAnyHeader().WithOrigins(origins));
-        }
-        private static void Test(WebApplication app)
-        {
+
+            app.MapGraphQL()/*.RequireAuthorization()*/;
+            app.MapControllers()/*.RequireAuthorization()*/;
+
+            if (app.Environment.IsDevelopment())
+            {
+                app.UseSwagger();
+                app.UseSwaggerUI();
+                app.MapBananaCakePop().AllowAnonymous();
+            }
+
+            // -------------------------------------------------------------------------------------------------------------------------- >8
+
             using var scope = app.Services.CreateScope();
 
             var logger = scope.ServiceProvider.GetRequiredService<ILoggerFactory>().CreateLogger<Program>();
             var db = scope.ServiceProvider.GetRequiredService<VocabContext>();
 
-
             db.Database.CanConnect().Throw(_ => new InvalidOperationException("Не получилось подключиться к базе данных.")).IfFalse();
             db.Database.EnsureCreated();
             // TODO: добавить проверку кейклока через http.
+
+            // -------------------------------------------------------------------------------------------------------------------------- >8
+            app.Run();
         }
     }
 }
