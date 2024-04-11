@@ -24,9 +24,11 @@ namespace Vocab.WebApi.Migrations
 
             modelBuilder.Entity("Vocab.Core.Entities.StatementDictionary", b =>
                 {
-                    b.Property<decimal>("Id")
+                    b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("numeric(20,0)");
+                        .HasColumnType("bigint");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
 
                     b.Property<DateTime>("LastModified")
                         .HasColumnType("timestamp with time zone");
@@ -45,15 +47,17 @@ namespace Vocab.WebApi.Migrations
 
             modelBuilder.Entity("Vocab.Core.Entities.StatementPair", b =>
                 {
-                    b.Property<decimal>("Id")
+                    b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("numeric(20,0)");
+                        .HasColumnType("bigint");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
 
                     b.Property<DateTime>("LastModified")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<decimal>("RelatedDictionaryId")
-                        .HasColumnType("numeric(20,0)");
+                    b.Property<long>("RelatedDictionaryId")
+                        .HasColumnType("bigint");
 
                     b.Property<string>("Source")
                         .IsRequired()

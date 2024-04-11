@@ -12,8 +12,8 @@ using Vocab.Infrastructure.Persistence;
 namespace Vocab.WebApi.Migrations
 {
     [DbContext(typeof(VocabContext))]
-    [Migration("20240408142844_InitialCreate")]
-    partial class InitialCreate
+    [Migration("20240411081602_Initial")]
+    partial class Initial
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -27,9 +27,11 @@ namespace Vocab.WebApi.Migrations
 
             modelBuilder.Entity("Vocab.Core.Entities.StatementDictionary", b =>
                 {
-                    b.Property<decimal>("Id")
+                    b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("numeric(20,0)");
+                        .HasColumnType("bigint");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
 
                     b.Property<DateTime>("LastModified")
                         .HasColumnType("timestamp with time zone");
@@ -48,19 +50,21 @@ namespace Vocab.WebApi.Migrations
 
             modelBuilder.Entity("Vocab.Core.Entities.StatementPair", b =>
                 {
-                    b.Property<decimal>("Id")
+                    b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("numeric(20,0)");
+                        .HasColumnType("bigint");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
 
                     b.Property<DateTime>("LastModified")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<string>("Origin")
+                    b.Property<long>("RelatedDictionaryId")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("Source")
                         .IsRequired()
                         .HasColumnType("text");
-
-                    b.Property<decimal>("RelatedDictionaryId")
-                        .HasColumnType("numeric(20,0)");
 
                     b.Property<int>("StatementCategory")
                         .HasColumnType("integer");

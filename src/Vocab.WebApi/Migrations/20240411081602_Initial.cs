@@ -1,12 +1,13 @@
 ﻿using System;
 using Microsoft.EntityFrameworkCore.Migrations;
+using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 #nullable disable
 
 namespace Vocab.WebApi.Migrations
 {
     /// <inheritdoc />
-    public partial class InitialCreate : Migration
+    public partial class Initial : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -15,7 +16,8 @@ namespace Vocab.WebApi.Migrations
                 name: "StatementDictionaries",
                 columns: table => new
                 {
-                    Id = table.Column<decimal>(type: "numeric(20,0)", nullable: false),
+                    Id = table.Column<long>(type: "bigint", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     Name = table.Column<string>(type: "text", nullable: false),
                     OwnerId = table.Column<Guid>(type: "uuid", nullable: false),
                     LastModified = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
@@ -29,12 +31,13 @@ namespace Vocab.WebApi.Migrations
                 name: "StatementPairs",
                 columns: table => new
                 {
-                    Id = table.Column<decimal>(type: "numeric(20,0)", nullable: false),
-                    Origin = table.Column<string>(type: "text", nullable: false),
+                    Id = table.Column<long>(type: "bigint", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    Source = table.Column<string>(type: "text", nullable: false),
                     Target = table.Column<string>(type: "text", nullable: false),
                     StatementCategory = table.Column<int>(type: "integer", nullable: false),
                     LastModified = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    RelatedDictionaryId = table.Column<decimal>(type: "numeric(20,0)", nullable: false)
+                    RelatedDictionaryId = table.Column<long>(type: "bigint", nullable: false)
                 },
                 constraints: table =>
                 {

@@ -24,7 +24,7 @@ namespace Vocab.Infrastructure.Persistence
             modelBuilder.Entity<StatementPair>(entity =>
             {
                 entity.HasKey(e => e.Id);
-                entity.HasOne(e => e.StatementsDictionary).WithMany(e => e.StatementPairs).HasForeignKey(e => e.RelatedDictionaryId).OnDelete(DeleteBehavior.Restrict);
+                entity.HasOne(e => e.StatementsDictionary).WithMany(e => e.StatementPairs).HasForeignKey(e => e.RelatedDictionaryId).OnDelete(DeleteBehavior.Restrict).IsRequired();
             });
 
             modelBuilder.Entity<StatementDictionary>(e =>

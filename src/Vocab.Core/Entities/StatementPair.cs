@@ -8,14 +8,14 @@ namespace Vocab.Core.Entities
     /// </summary>
     public class StatementPair : ILastModifiedEntity
     {
-        public required ulong Id { get; init; }
+        public required long Id { get; init; }
         public required string Source { get; init; }
         public required string Target { get; init; }
         public required StatementCategory StatementCategory { get; init; }
         public required DateTime LastModified { get; init; }
 
-        public required ulong RelatedDictionaryId { get; init; }
-        public required StatementDictionary StatementsDictionary { get; init; }
+        public required long RelatedDictionaryId { get; init; }
+        public StatementDictionary? StatementsDictionary { get; init; }
 
     }
 }
