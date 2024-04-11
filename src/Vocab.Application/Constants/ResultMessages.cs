@@ -1,4 +1,4 @@
-﻿namespace Vocab.Application.Shared
+﻿namespace Vocab.Application.Constants
 {
     public static class ResultMessages
     {

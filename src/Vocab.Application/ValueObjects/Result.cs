@@ -1,10 +1,10 @@
-﻿namespace Vocab.Application.Shared
+﻿namespace Vocab.Application.ValueObjects
 {
     public class Result(bool success, string description)
     {
         public string Description { get; init; } = description;
         public bool Success { get; init; } = success;
-        public Result? InnerResult { get; protected set; } 
+        public Result? InnerResult { get; protected set; }
 
         public static Result Fail(string description) => new(false, description);
         public static Result Ok(string description) => new(true, description);
