@@ -1,8 +1,11 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Npgsql;
 using Vocab.Application.Configuration;
+using Vocab.Application.Shared;
 using Vocab.Core.Entities;
+using static Vocab.Application.Shared.ResultMessages;
 
 namespace Vocab.Infrastructure.Persistence
 {
@@ -33,6 +36,34 @@ namespace Vocab.Infrastructure.Persistence
             {
                 e.HasKey(e => e.Id);
             });
+        }
+
+        public async Task<Result> TrySaveChangesAsync(CancellationToken cancellationToken = default)
+        {
+            try
+            {
+                return await SaveChangesAsync(cancellationToken) != 0 ? Result.Ok("Операция в базе данных прошла успешно.") : Result.Fail(NotFound);
+            }
+
+            catch (DbUpdateConcurrencyException)
+            {
+                return Result.Fail(NotFound);
+            }
+
+            catch (DbUpdateException ex) when (ex.InnerException is PostgresException pgEx && pgEx.SqlState == PostgresErrorCodes.ForeignKeyViolation)
+            {
+                return Result.Fail($"{ForeignKeyError} Имя ограничения: {pgEx.ConstraintName}");
+            }
+
+            catch (DbUpdateException ex) when (ex.InnerException is PostgresException pgEx && pgEx.SqlState == PostgresErrorCodes.UniqueViolation)
+            {
+                return Result.Fail($"{UniqueIndexError} Имя ограничения: {pgEx.ConstraintName}");
+            }
+
+            catch
+            {
+                throw;
+            }
         }
     }
 }
