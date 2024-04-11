@@ -1,4 +1,4 @@
-﻿namespace Vocab.Application.Configuration
+﻿namespace Vocab.Infrastructure.Configuration
 {
     public class CorsConfiguration
     {

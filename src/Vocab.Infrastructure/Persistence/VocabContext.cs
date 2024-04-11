@@ -2,9 +2,9 @@
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Npgsql;
-using Vocab.Application.Configuration;
 using Vocab.Application.ValueObjects;
 using Vocab.Core.Entities;
+using Vocab.Infrastructure.Configuration;
 using static Vocab.Application.Constants.ResultMessages;
 
 namespace Vocab.Infrastructure.Persistence

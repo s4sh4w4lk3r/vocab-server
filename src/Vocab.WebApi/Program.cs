@@ -5,7 +5,7 @@ using Microsoft.OpenApi.Models;
 using Serilog;
 using System.Reflection;
 using Throw;
-using Vocab.Application.Configuration;
+using Vocab.Infrastructure.Configuration;
 using Vocab.Infrastructure.GraphQL;
 using Vocab.Infrastructure.Persistence;
 
