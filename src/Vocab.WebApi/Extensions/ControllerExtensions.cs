@@ -2,7 +2,7 @@
 using System.Collections.ObjectModel;
 using System.Security.Claims;
 using System.Text.Json;
-using System.Text.Json.Serialization;
+using Throw;
 using Vocab.Core.Entities;
 
 namespace Vocab.WebApi.Extensions
@@ -21,8 +21,8 @@ namespace Vocab.WebApi.Extensions
                 Lastname = controller.User.FindFirstValue(ClaimTypes.Surname),
                 Username = controller.User.FindFirstValue("preferred_username") ?? throw new ArgumentNullException("Не был получен Username из токена."),
                 IsEmailVerified = Convert.ToBoolean(controller.User.FindFirstValue("email_verified")),
-                Roles = JsonSerializer.Deserialize<RealmAccess>(realmAccessJson)?.Roles.AsReadOnly() ?? throw new ArgumentNullException("Не был получен список ролей при десериализации JSON.")
-            };
+                Roles = GetRoles(realmAccessJson)
+        };
 
             return user;
         }
@@ -32,10 +32,15 @@ namespace Vocab.WebApi.Extensions
             return Guid.Parse(guidStr);
         }
 
-        private record class RealmAccess
+        private static ReadOnlyCollection<string> GetRoles(string json)
         {
-            [JsonPropertyName("roles")]
-            public List<string> Roles { get; init; } = [];
+            using var realmAccess = JsonDocument.Parse(json);
+
+            var rolesJsonArray = realmAccess.RootElement.GetProperty("roles").EnumerateArray();
+            var roles = rolesJsonArray.Select(js => js.GetString())
+                .ThrowIfNull().IfEmpty().IfHasNullElements()
+                .Value.ToList().AsReadOnly();
+            return roles!;
         }
     }
 
