@@ -1,13 +1,11 @@
 using HotChocolate.Types;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.Extensions.Options;
-using Microsoft.OpenApi.Models;
 using Serilog;
-using System.Reflection;
 using Throw;
 using Vocab.Infrastructure.Configuration;
-using Vocab.Infrastructure.GraphQL;
 using Vocab.Infrastructure.Persistence;
+using Vocab.WebApi.Extensions;
 
 namespace Vocab.WebApi
 {
@@ -28,46 +26,15 @@ namespace Vocab.WebApi
             builder.Services.AddControllers();
             builder.Services.AddDbContext<VocabContext>(contextLifetime: ServiceLifetime.Scoped, optionsLifetime: ServiceLifetime.Scoped);
 
-            builder.Services.AddGraphQLServer()
-            .ModifyOptions(options => { options.DefaultBindingBehavior = BindingBehavior.Implicit; })
-            .AllowIntrospection(builder.Environment.IsDevelopment())
-            .ModifyRequestOptions(o => o.OnlyAllowPersistedQueries = !builder.Environment.IsDevelopment())
-            .UsePersistedQueryPipeline().AddReadOnlyFileSystemQueryStorage("./../Vocab.Infrastructure/GraphQL/PersistedQueries")
-            .AddQueryType<Query>().AddProjections().AddFiltering().AddSorting().AddAuthorization();
+            IConfigurationSection kcConfigurationSection = builder.Configuration.GetRequiredSection(nameof(KeycloakConfiguration));
+            KeycloakConfiguration kcConfiguration = kcConfigurationSection.Get<KeycloakConfiguration>() ?? throw new ArgumentNullException("Конфигурация Keycloak не получена.");
+            builder.Services.AddAuthenticationVocab(kcConfiguration);
+            builder.Services.AddAuthorizationVocab(kcConfiguration);
 
-            builder.Services.AddSwaggerGen(options =>
-            {
-                options.SwaggerDoc("v1", new OpenApiInfo
-                {
-                    Version = "v1",
-                    Title = "Vocab WebApi",
-                    Description = "Vocab WebApi"
-                });
+            builder.Services.AddSwaggerVocab();
+            builder.Services.AddGraphQLVocab(isDevelopment: builder.Environment.IsDevelopment());
 
-                var xmlFilename = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
-                options.IncludeXmlComments(Path.Combine(AppContext.BaseDirectory, xmlFilename));
 
-                options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
-                {
-                    Type = SecuritySchemeType.OpenIdConnect,
-                    OpenIdConnectUrl = new Uri("http://localhost/auth/realms/vocab/.well-known/openid-configuration"),
-                });
-
-                options.AddSecurityRequirement(new OpenApiSecurityRequirement()
-                {
-                    {
-                        new OpenApiSecurityScheme()
-                        {
-                            Reference = new OpenApiReference()
-                            {
-                                Type=ReferenceType.SecurityScheme,
-                                Id="Bearer"
-                            }
-                        },
-                        new string[]{}
-                    }
-                });
-            });
 
             // -------------------------------------------------------------------------------------------------------------------------- >8
 
@@ -78,6 +45,7 @@ namespace Vocab.WebApi
 
             builder.Services.Configure<PostgresConfiguration>(builder.Configuration.GetRequiredSection(nameof(PostgresConfiguration)));
             builder.Services.Configure<CorsConfiguration>(builder.Configuration.GetRequiredSection(nameof(CorsConfiguration)));
+            builder.Services.Configure<KeycloakConfiguration>(kcConfigurationSection);
 
             // -------------------------------------------------------------------------------------------------------------------------- >8
 
@@ -87,14 +55,14 @@ namespace Vocab.WebApi
 
             app.UseForwardedHeaders();
 
-            /*app.UseAuthentication();
-            app.UseAuthorization();*/
+            app.UseAuthentication();
+            app.UseAuthorization();
 
             var origins = app.Services.GetRequiredService<IOptions<CorsConfiguration>>().Value.Origins;
             app.UseCors(o => o.AllowAnyMethod().AllowAnyHeader().WithOrigins(origins));
 
-            app.MapGraphQL()/*.RequireAuthorization()*/;
-            app.MapControllers()/*.RequireAuthorization()*/;
+            app.MapGraphQL().RequireAuthorization();
+            app.MapControllers().RequireAuthorization();
 
             if (app.Environment.IsDevelopment())
             {

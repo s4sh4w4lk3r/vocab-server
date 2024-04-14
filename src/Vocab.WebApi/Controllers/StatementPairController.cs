@@ -5,41 +5,41 @@ using Vocab.Application.Abstractions.Services;
 namespace Vocab.WebApi.Controllers
 {
     [ApiController, Route("statement-pairs")]
-    public class StatementPairController: ControllerBase
+    public class StatementPairController(IStatementPairService statementPairService) : ControllerBase
     {
         [HttpPut]
-        public  IActionResult Put()
+        public IActionResult Put()
         {
             return StatusCode(((int)HttpStatusCode.NotImplemented));
         }
 
         [HttpDelete, Route("{id}")]
-        public  IActionResult Delete(ulong id)
+        public IActionResult Delete(ulong id)
         {
             return StatusCode(((int)HttpStatusCode.NotImplemented));
         }
 
         [HttpPatch]
-        public  IActionResult Patch()
+        public IActionResult Patch()
         {
             return StatusCode(((int)HttpStatusCode.NotImplemented));
         }
 
 
         [HttpPatch, Route("{id}/rating/increase")]
-        public  IActionResult IncreaseRating(ulong id)
+        public IActionResult IncreaseRating(ulong id)
         {
             return StatusCode(((int)HttpStatusCode.NotImplemented));
         }
 
         [HttpPatch, Route("{id}/rating/decrease")]
-        public  IActionResult DecreaseRating(ulong id)
+        public IActionResult DecreaseRating(ulong id)
         {
             return StatusCode(((int)HttpStatusCode.NotImplemented));
         }
 
         [HttpGet, Route("{id}/rating")]
-        public  IActionResult GetRating(ulong id)
+        public IActionResult GetRating(ulong id)
         {
             return StatusCode(((int)HttpStatusCode.NotImplemented));
         }
