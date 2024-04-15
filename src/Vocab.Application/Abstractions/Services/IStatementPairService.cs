@@ -6,7 +6,7 @@ namespace Vocab.Application.Abstractions.Services
 {
     public interface IStatementPairService : IRatingService
     {
-        public Task<Result<StatementPair>> Create(StatementPair statementPair);
+        public Task<Result<StatementPair>> Insert(StatementPair statementPair);
         public Task<Result<StatementPair>> Update(StatementPair statementPair);
         public Task<Result> Delete(long id);
 

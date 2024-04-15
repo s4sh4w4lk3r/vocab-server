@@ -5,7 +5,7 @@ namespace Vocab.Application.Abstractions.Services
 {
     public interface IDictionaryService
     {
-        public Task<Result<StatementDictionary>> Create(StatementDictionary dictionary);
+        public Task<Result<StatementDictionary>> Insert(StatementDictionary dictionary);
         public Task<Result<StatementDictionary>> Update(StatementDictionary dictionary);
         public Task<Result> Delete(long id);
 
