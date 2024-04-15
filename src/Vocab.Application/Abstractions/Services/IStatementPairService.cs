@@ -6,12 +6,12 @@ namespace Vocab.Application.Abstractions.Services
 {
     public interface IStatementPairService : IRatingService
     {
-        public Task<Result<StatementPair>> Insert(StatementPair statementPair);
-        public Task<Result<StatementPair>> Update(StatementPair statementPair);
-        public Task<Result> Delete(long id);
+        public Task<ResultVocab<StatementPair>> Insert(StatementPair statementPair);
+        public Task<ResultVocab<StatementPair>> Update(StatementPair statementPair);
+        public Task<ResultVocab> Delete(Guid userId, long id);
 
-        public Task<Result<StatementPair>> SetSource(long id, string source);
-        public Task<Result<StatementPair>> SetTarget(long id, string target);
-        public Task<Result<StatementPair>> SetCategory(long id, StatementCategory category);
+        public Task<ResultVocab<StatementPair>> SetSource(Guid userId, long statementPairId, string source);
+        public Task<ResultVocab<StatementPair>> SetTarget(Guid userId, long statementPairId, string target);
+        public Task<ResultVocab<StatementPair>> SetCategory(Guid userId, long statementPairId, StatementCategory category);
     }
 }

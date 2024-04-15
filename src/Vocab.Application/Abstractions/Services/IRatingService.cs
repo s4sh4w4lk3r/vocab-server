@@ -8,12 +8,12 @@ namespace Vocab.Application.Abstractions.Services
         /// Увеличить рейтинг выражения.
         /// </summary>
         /// <returns>Текущее значение рейтинга.</returns>
-        public Task<Result<int>> Increase();
+        public Task<ResultVocab<int>> Increase(Guid userId, long statementPairId);
 
         /// <summary>
         /// Уменьшить рейтинг выражения.
         /// </summary>
         /// <returns>Текущее значение рейтинга.</returns>
-        public Task<Result<int>> Decrease();
+        public Task<ResultVocab<int>> Decrease(Guid userId, long statementPairId);
     }
 }

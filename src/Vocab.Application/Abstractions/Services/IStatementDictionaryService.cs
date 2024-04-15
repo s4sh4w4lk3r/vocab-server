@@ -5,11 +5,11 @@ namespace Vocab.Application.Abstractions.Services
 {
     public interface IStatementDictionaryService
     {
-        public Task<Result<StatementDictionary>> Insert(StatementDictionary dictionary);
-        public Task<Result<StatementDictionary>> Update(StatementDictionary dictionary);
-        public Task<Result> Delete(long id);
+        public Task<ResultVocab<StatementDictionary>> Insert(StatementDictionary dictionary);
+        public Task<ResultVocab<StatementDictionary>> Update(StatementDictionary dictionary);
+        public Task<ResultVocab> Delete(Guid userId, long dictionaryId);
 
-        public Task<Result<StatementDictionary>> SetName(long id, string name);
-        public Task<Result<IQueryable<StatementPair>>> GetStatementsForChallenge(long dictionaryId);
+        public Task<ResultVocab<StatementDictionary>> SetName(Guid userId, long dictionaryId, string name);
+        public Task<ResultVocab<IQueryable<StatementPair>>> GetStatementsForChallenge(Guid userId, long dictionaryId);
     }   
 }
