@@ -4,9 +4,9 @@ namespace Vocab.Application.Abstractions.Repositories
 {
     public interface IUserRepository
     {
-        Task<User> GetAsync(Guid guid);
-        Task CreateAsync(User user);
-        Task DeleteAsync(Guid guid);
-        Task UpdateAsync(User user);
+        Task<User> Get(Guid guid);
+        Task Insert(User user);
+        Task Delete(Guid guid);
+        Task Update(User user);
     }
 }
