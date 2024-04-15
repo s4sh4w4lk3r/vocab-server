@@ -5,7 +5,7 @@ namespace Vocab.Core.Entities
     /// <summary>
     /// Включает в себя оригинал и перевод выражения.
     /// </summary>
-    public class StatementPair
+    public class StatementPair: IEntity
     {
         public required long Id { get; init; }
         public required string Source { get; init; }

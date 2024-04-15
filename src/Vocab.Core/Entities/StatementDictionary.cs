@@ -2,7 +2,7 @@
 
 namespace Vocab.Core.Entities
 {
-    public class StatementDictionary
+    public class StatementDictionary: IEntity
     {
         public required long Id { get; init; }
         public required string Name { get; init; }
