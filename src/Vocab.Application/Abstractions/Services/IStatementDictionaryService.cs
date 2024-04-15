@@ -3,7 +3,7 @@ using Vocab.Core.Entities;
 
 namespace Vocab.Application.Abstractions.Services
 {
-    public interface IDictionaryService
+    public interface IStatementDictionaryService
     {
         public Task<Result<StatementDictionary>> Insert(StatementDictionary dictionary);
         public Task<Result<StatementDictionary>> Update(StatementDictionary dictionary);
