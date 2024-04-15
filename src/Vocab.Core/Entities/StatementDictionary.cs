@@ -1,9 +1,8 @@
 ﻿using System.Collections.ObjectModel;
-using Vocab.Core.Abstractions;
 
 namespace Vocab.Core.Entities
 {
-    public class StatementDictionary : ILastModifiedEntity
+    public class StatementDictionary
     {
         public required long Id { get; init; }
         public required string Name { get; init; }
