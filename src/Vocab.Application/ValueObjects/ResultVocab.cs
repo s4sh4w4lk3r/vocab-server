@@ -1,21 +1,21 @@
 ﻿namespace Vocab.Application.ValueObjects
 {
-    public class Result(bool success, string description)
+    public class ResultVocab(bool success, string description)
     {
         public string Description { get; init; } = description;
         public bool Success { get; init; } = success;
-        public Result? InnerResult { get; protected set; }
+        public ResultVocab? InnerResult { get; protected set; }
 
-        public static Result Fail(string description) => new(false, description);
-        public static Result Ok(string description) => new(true, description);
+        public static ResultVocab Fail(string description) => new(false, description);
+        public static ResultVocab Ok(string description = "") => new(true, description);
 
-        public Result<TValue> AddValue<TValue>(TValue value)
+        public ResultVocab<TValue> AddValue<TValue>(TValue value)
         {
-            var result = new Result<TValue>(Success, Description, value);
+            var result = new ResultVocab<TValue>(Success, Description, value);
             return InnerResult is not null ? result.AddInnerResult(InnerResult) : result;
         }
 
-        public Result AddInnerResult(Result innerResult)
+        public ResultVocab AddInnerResult(ResultVocab innerResult)
         {
             InnerResult = innerResult;
             return this;
@@ -28,11 +28,11 @@
         }
     }
 
-    public class Result<TValue>(bool success, string description, TValue value) : Result(success, description)
+    public class ResultVocab<TValue>(bool success, string description, TValue value) : ResultVocab(success, description)
     {
         public TValue Value { get; init; } = value;
 
-        public new Result<TValue> AddInnerResult(Result innerResult)
+        public new ResultVocab<TValue> AddInnerResult(ResultVocab innerResult)
         {
             InnerResult = innerResult;
             return this;

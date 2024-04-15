@@ -24,4 +24,8 @@
     <ProjectReference Include="..\Vocab.Application\Vocab.Application.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Persistence\Repositories\" />
+  </ItemGroup>
+
 </Project>

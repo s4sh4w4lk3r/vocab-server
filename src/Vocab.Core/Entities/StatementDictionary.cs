@@ -9,6 +9,6 @@ namespace Vocab.Core.Entities
         public required Guid OwnerId { get; init; }
         public required DateTime LastModified { get; init; }
 
-        public Collection<StatementPair>? StatementPairs { get; init; }
+        public List<StatementPair>? StatementPairs { get; init; }
     }
 }

@@ -38,26 +38,26 @@ namespace Vocab.Infrastructure.Persistence
             });
         }
 
-        public async Task<Result> TrySaveChangesAsync(CancellationToken cancellationToken = default)
+        public async Task<ResultVocab> TrySaveChangesAsync(CancellationToken cancellationToken = default)
         {
             try
             {
-                return await SaveChangesAsync(cancellationToken) != 0 ? Result.Ok("Операция в базе данных прошла успешно.") : Result.Fail(NotFound);
+                return await SaveChangesAsync(cancellationToken) != 0 ? ResultVocab.Ok("Операция в базе данных прошла успешно.") : ResultVocab.Fail(NotFound);
             }
 
             catch (DbUpdateConcurrencyException)
             {
-                return Result.Fail(NotFound);
+                return ResultVocab.Fail(NotFound);
             }
 
             catch (DbUpdateException ex) when (ex.InnerException is PostgresException pgEx && pgEx.SqlState == PostgresErrorCodes.ForeignKeyViolation)
             {
-                return Result.Fail($"{ForeignKeyError} Имя ограничения: {pgEx.ConstraintName}");
+                return ResultVocab.Fail($"{ForeignKeyError} Имя ограничения: {pgEx.ConstraintName}");
             }
 
             catch (DbUpdateException ex) when (ex.InnerException is PostgresException pgEx && pgEx.SqlState == PostgresErrorCodes.UniqueViolation)
             {
-                return Result.Fail($"{UniqueIndexError} Имя ограничения: {pgEx.ConstraintName}");
+                return ResultVocab.Fail($"{UniqueIndexError} Имя ограничения: {pgEx.ConstraintName}");
             }
 
             catch
