@@ -1,8 +1,9 @@
 ﻿using System.Collections.ObjectModel;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Vocab.Core.Entities
 {
-    public class StatementDictionary: IEntity
+    public class StatementDictionary(): IEntity
     {
         public required long Id { get; init; }
         public required string Name { get; init; }
@@ -10,5 +11,15 @@ namespace Vocab.Core.Entities
         public required DateTime LastModified { get; init; }
 
         public List<StatementPair>? StatementPairs { get; init; }
+
+
+        [SetsRequiredMembers]
+        public StatementDictionary(long id, string name, Guid ownerId, DateTime lastModified) : this()
+        {
+            Id = id;
+            Name = name;
+            OwnerId = ownerId;
+            LastModified = lastModified;
+        }
     }
 }
