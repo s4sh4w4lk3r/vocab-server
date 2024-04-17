@@ -1,24 +1,13 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 using Npgsql;
 using Vocab.Application.ValueObjects;
 using Vocab.Core.Entities;
-using Vocab.Infrastructure.Configuration;
 using static Vocab.Application.Constants.ResultMessages;
 
 namespace Vocab.Infrastructure.Persistence
 {
-    public class VocabContext(IOptions<PostgresConfiguration> options, ILoggerFactory loggerFactory) : DbContext
+    public class VocabContext(DbContextOptions<VocabContext> options) : DbContext(options)
     {
-        private readonly PostgresConfiguration _configuration = options.Value ?? throw new ArgumentNullException(nameof(options), "Параметры подключения к БД не получены.");
-        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-        {
-            optionsBuilder.UseLoggerFactory(loggerFactory);
-            optionsBuilder.EnableSensitiveDataLogging(sensitiveDataLoggingEnabled: _configuration.SensitiveDataLoggingEnabled);
-            optionsBuilder.UseNpgsql(_configuration.ConnectionString, options => options.MigrationsAssembly("Vocab.WebApi"));
-        }
-
         public DbSet<StatementPair> StatementPairs => Set<StatementPair>();
         public DbSet<StatementDictionary> StatementDictionaries => Set<StatementDictionary>();
 

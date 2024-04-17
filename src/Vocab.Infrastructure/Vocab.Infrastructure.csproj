@@ -7,12 +7,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Remove="Persistence\Migrations\**" />
-    <EmbeddedResource Remove="Persistence\Migrations\**" />
-    <None Remove="Persistence\Migrations\**" />
-  </ItemGroup>
-
-  <ItemGroup>
     <PackageReference Include="HotChocolate.AspNetCore" Version="13.9.0" />
     <PackageReference Include="HotChocolate.AspNetCore.Authorization" Version="13.9.0" />
     <PackageReference Include="HotChocolate.Data.EntityFramework" Version="13.9.0" />
