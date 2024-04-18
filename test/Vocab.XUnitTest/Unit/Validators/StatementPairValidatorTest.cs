@@ -28,7 +28,7 @@ namespace Vocab.XUnitTest.Unit.Validators
         {
             StatementPair statementPair = new(1234, source, target, StatementCategory.None, 1, DateTime.Now, 1234);
 
-            bool isValid = new StatementPairValidator().Validate(statementPair).IsValid;
+            bool isValid = new StatementPairValidator(true).Validate(statementPair).IsValid;
 
             Assert.Equal(expected, isValid);
         }
@@ -40,7 +40,7 @@ namespace Vocab.XUnitTest.Unit.Validators
         {
             StatementPair statementPair = new(1, "Source", "Target", statementCategory, 1, DateTime.Now, 1234);
 
-            bool isValid = new StatementPairValidator().Validate(statementPair).IsValid;
+            bool isValid = new StatementPairValidator(true).Validate(statementPair).IsValid;
 
             Assert.Equal(expected, isValid);
         }
@@ -54,7 +54,7 @@ namespace Vocab.XUnitTest.Unit.Validators
         {
             StatementPair statementPair = new(1, "Source", "Target", StatementCategory.None, level, DateTime.Now, 1234);
 
-            bool isValid = new StatementPairValidator().Validate(statementPair).IsValid;
+            bool isValid = new StatementPairValidator(true).Validate(statementPair).IsValid;
 
             Assert.Equal(expected, isValid);
         }
@@ -65,7 +65,7 @@ namespace Vocab.XUnitTest.Unit.Validators
             StatementDictionary statementDictionary = new() { Id = 1, LastModified = DateTime.Now, Name = "Test", OwnerId = Guid.Empty };
             StatementPair statementPair = new(1, "Source", "Target", StatementCategory.None, 1, DateTime.Now, 1234) { StatementsDictionary = statementDictionary };
 
-            bool isValid = new StatementPairValidator().Validate(statementPair).IsValid;
+            bool isValid = new StatementPairValidator(true).Validate(statementPair).IsValid;
 
             Assert.False(isValid);
         }

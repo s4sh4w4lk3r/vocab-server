@@ -5,7 +5,7 @@ namespace Vocab.Application.Validators
 {
     public class StatementPairValidator : AbstractValidator<StatementPair>
     {
-        public StatementPairValidator(bool isIdValidationRequired = true)
+        public StatementPairValidator(bool isIdValidationRequired)
         {
             _ = isIdValidationRequired ? RuleFor(sp => sp.Id).NotEmpty() : null;
 

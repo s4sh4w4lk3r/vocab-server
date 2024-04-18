@@ -5,7 +5,7 @@ namespace Vocab.Application.Validators
 {
     public class StatementDictionaryValidator : AbstractValidator<StatementDictionary>
     {
-        public StatementDictionaryValidator(bool isIdValidationRequired = true)
+        public StatementDictionaryValidator(bool isIdValidationRequired)
         {
             _ = isIdValidationRequired ? RuleFor(sd => sd.Id).NotEmpty() : null;
 
