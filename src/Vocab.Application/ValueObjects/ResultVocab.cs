@@ -7,9 +7,9 @@
         public ResultVocab? InnerResult { get; protected set; }
 
         public static ResultVocab Fail(string description) => new(false, description);
-        public static ResultVocab Ok(string description = "") => new(true, description);
+        public static ResultVocab Ok(string description = "👍") => new(true, description);
 
-        public ResultVocab<TValue> AddValue<TValue>(TValue value)
+        public ResultVocab<TValue> AddValue<TValue>(TValue? value)
         {
             var result = new ResultVocab<TValue>(Success, Description, value);
             return InnerResult is not null ? result.AddInnerResult(InnerResult) : result;
@@ -28,9 +28,9 @@
         }
     }
 
-    public class ResultVocab<TValue>(bool success, string description, TValue value) : ResultVocab(success, description)
+    public class ResultVocab<TValue>(bool success, string description, TValue? value) : ResultVocab(success, description)
     {
-        public TValue Value { get; init; } = value;
+        public TValue? Value { get; init; } = value;
 
         public new ResultVocab<TValue> AddInnerResult(ResultVocab innerResult)
         {

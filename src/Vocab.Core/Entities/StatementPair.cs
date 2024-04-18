@@ -14,7 +14,7 @@ namespace Vocab.Core.Entities
         public required StatementCategory StatementCategory { get; init; } = StatementCategory.None;
 
         /// <summary>
-        /// Уровень знания первода. Может принимать значение от 1 (вкл.) до 5 (вкл.).
+        /// Уровень знания перевода. Может принимать значение от 1 (вкл.) до 5 (вкл.).
         /// </summary>
         public int GuessingLevel { get; private set; } = MIN_GUESSING_LEVEL;
         public required DateTime LastModified { get; init; }
