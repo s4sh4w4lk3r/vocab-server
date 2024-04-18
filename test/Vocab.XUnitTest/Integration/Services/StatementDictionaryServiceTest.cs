@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Vocab.Application.Abstractions.Services;
 using Vocab.Core.Entities;
@@ -26,10 +27,12 @@ namespace Vocab.XUnitTest.Integration.Services
         static StatementDictionaryServiceTest()
         {
             ServiceCollection services = new();
+            ConfigurationBuilder builder = new();
+            builder.AddUserSecrets("5b793eb0-da62-410a-be80-5f2a05718376");
+            IConfigurationRoot configuration = builder.Build();
 
-            services.AddDbContext<VocabContext>(options => options.UseNpgsql(""));
+            services.AddDbContext<VocabContext>(options => options.UseNpgsql(configuration.GetConnectionString("Postgres")));
             services.AddScoped<IStatementDictionaryService, StatementDictionaryService>();
-
 
             serviceProvider = services.BuildServiceProvider();
 
