@@ -9,7 +9,7 @@ namespace Vocab.Application.Abstractions.Services
         public Task<ResultVocab<StatementDictionary>> Update(StatementDictionary dictionary);
         public Task<ResultVocab> Delete(Guid userId, long dictionaryId);
 
-        public Task<ResultVocab<StatementDictionary>> SetName(Guid userId, long dictionaryId, string name);
-        public Task<ResultVocab<IQueryable<StatementPair>>> GetStatementsForChallenge(Guid userId, long dictionaryId);
+        public Task<ResultVocab> SetName(Guid userId, long dictionaryId, string name);
+        public Task<ResultVocab<List<StatementPair>>> GetStatementsForChallenge(Guid userId, long dictionaryId, int gameLength = 25);
     }   
 }

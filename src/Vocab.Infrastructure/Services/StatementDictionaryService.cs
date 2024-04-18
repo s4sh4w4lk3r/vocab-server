@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Vocab.Application.Abstractions.Services;
 using Vocab.Application.Constants;
+using Vocab.Application.Validators;
 using Vocab.Application.ValueObjects;
 using Vocab.Core.Entities;
 using Vocab.Infrastructure.Persistence;
@@ -9,46 +10,62 @@ namespace Vocab.Infrastructure.Services
 {
     public class StatementDictionaryService(VocabContext context) : IStatementDictionaryService
     {
+#warning проверить
         public async Task<ResultVocab> Delete(Guid userId, long dictionaryId)
         {
-#warning проверить
-            return await context.StatementDictionaries.Where(sd => sd.Id == dictionaryId && sd.OwnerId == userId).ExecuteDeleteAsync() == 1
-               ? ResultVocab.Ok(ResultMessages.Deleted) : ResultVocab.Ok(ResultMessages.NotFound);
+            if (userId == default || dictionaryId == default)
+            {
+                return ResultVocab.Fail("userId или dictionaryId имеют пустое значение.");
+            }
+            int rowsDeleted = await context.StatementDictionaries.Where(sd => sd.Id == dictionaryId && sd.OwnerId == userId).ExecuteDeleteAsync();
+            return rowsDeleted == 1 ? ResultVocab.Ok(ResultMessages.Deleted) : ResultVocab.Ok(ResultMessages.NotFound);
         }
 
-        public async Task<ResultVocab<List<StatementPair>?>> GetStatementsForChallenge(long dictionaryId, Guid userId, int gameLength = 25)
+        public async Task<ResultVocab<List<StatementPair>>> GetStatementsForChallenge(Guid userId, long dictionaryId, int gameLength = 25)
         {
-#warning проверить
             if (gameLength > 150 || gameLength < 5)
             {
-                return ResultVocab.Fail("Количество слов для игры должно быть не меньше 5 и не более 150").AddValue<List<StatementPair>?>(null);
+                return ResultVocab.Fail("Количество слов для игры должно быть не меньше 5 и не более 150.").AddValue(default(List<StatementPair>));
             }
 
             List<StatementPair> statementPairs = await context.StatementPairs
                 .Where(sp => sp.StatementsDictionary!.Id == dictionaryId && sp.StatementsDictionary.OwnerId == userId)
                 .OrderBy(sp => sp.GuessingLevel).Take(gameLength).ToListAsync() ?? [];
-            return statementPairs is { Count: > 0 } ? ResultVocab.Ok().AddValue<List<StatementPair>?>(statementPairs) : ResultVocab.Fail("Словарь пустой.").AddValue<List<StatementPair>?>(default); ;
+            return statementPairs is { Count: > 0 } ? ResultVocab.Ok().AddValue(statementPairs) : ResultVocab.Fail("Словарь пустой.").AddValue(default(List<StatementPair>)); ;
         }
 
-        public Task<ResultVocab<IQueryable<StatementPair>>> GetStatementsForChallenge(Guid userId, long dictionaryId)
+        public async Task<ResultVocab<StatementDictionary>> Insert(StatementDictionary dictionary)
         {
-            throw new NotImplementedException();
+            var valResult = new StatementDictionaryValidator(willBeInserted: true).Validate(dictionary);
+            if (!valResult.IsValid)
+            {
+                return ResultVocab.Fail(valResult.ToString()).AddValue(default(StatementDictionary));
+            }
+
+            await context.StatementDictionaries.AddAsync(dictionary);
+            return (await context.TrySaveChangesAsync(ResultMessages.Added)).AddValue(dictionary);
         }
 
-        public Task<ResultVocab<StatementDictionary>> Insert(StatementDictionary dictionary)
+        public async Task<ResultVocab> SetName(Guid userId, long dictionaryId, string name)
         {
-
-            throw new NotImplementedException();
+            if (string.IsNullOrWhiteSpace(name))
+            {
+                return ResultVocab.Fail("Имя не должно быть пустым.");
+            }
+            int rowsUpdated = await context.StatementDictionaries.Where(sd => sd.OwnerId == userId && sd.Id == dictionaryId).ExecuteUpdateAsync(sd => sd.SetProperty(p => p.Name, name));
+            return rowsUpdated == 1 ? ResultVocab.Ok(ResultMessages.Updated) : ResultVocab.Ok(ResultMessages.UpdateError);
         }
 
-        public Task<ResultVocab<StatementDictionary>> SetName(Guid userId, long dictionaryId, string name)
+        public async Task<ResultVocab<StatementDictionary>> Update(StatementDictionary dictionary)
         {
-            throw new NotImplementedException();
-        }
+            var valResult = new StatementDictionaryValidator(willBeInserted: false).Validate(dictionary);
+            if (!valResult.IsValid)
+            {
+                return ResultVocab.Fail(valResult.ToString()).AddValue(default(StatementDictionary));
+            }
 
-        public Task<ResultVocab<StatementDictionary>> Update(StatementDictionary dictionary)
-        {
-            throw new NotImplementedException();
+            context.StatementDictionaries.Update(dictionary);
+            return (await context.TrySaveChangesAsync(ResultMessages.Updated)).AddValue(dictionary);
         }
     }
 }
