@@ -27,11 +27,11 @@ namespace Vocab.Infrastructure.Persistence
             });
         }
 
-        public async Task<ResultVocab> TrySaveChangesAsync(CancellationToken cancellationToken = default)
+        public async Task<ResultVocab> TrySaveChangesAsync(string successMessage = "Операция в базе данных прошла успешно.", CancellationToken cancellationToken = default)
         {
             try
             {
-                return await SaveChangesAsync(cancellationToken) != 0 ? ResultVocab.Ok("Операция в базе данных прошла успешно.") : ResultVocab.Fail(NotFound);
+                return await SaveChangesAsync(cancellationToken) != 0 ? ResultVocab.Ok(successMessage) : ResultVocab.Fail(NotFound);
             }
 
             catch (DbUpdateConcurrencyException)
