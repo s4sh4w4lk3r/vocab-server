@@ -1,24 +1,27 @@
-﻿using Vocab.Application.Validators;
+﻿using FluentValidation;
+using Vocab.Application.Validators;
 using Vocab.Core.Entities;
 
 namespace Vocab.XUnitTest.Unit.Validators
 {
     public class StatementDictionaryValidatorTest
     {
-        private readonly long validId = 1234;
+        private readonly long validPKey = 1234;
         private readonly string validName = "Dictionary";
-        private readonly Guid validOwnerId = Guid.NewGuid();
+        private readonly Guid validFKey = Guid.NewGuid();
         private readonly DateTime validDateTime = DateTime.Now;
+        private readonly bool validWillBeInserted = false;
 
         [Theory]
-        [InlineData(true, 1234, true)]
-        [InlineData(true, 0, false)]
+        [InlineData(true, 0, true)]
         [InlineData(true, 1234, false)]
-        public void TestIdRule(bool expected, long id, bool isPKeyValidationRequired)
+        [InlineData(false, 1234, true)]
+        [InlineData(false, 0, false)]
+        public void TestPKeyRule(bool expected, long id, bool willBeInserted)
         {
-            StatementDictionary statementDictionary = new(id, validName, validOwnerId, validDateTime);
+            StatementDictionary statementDictionary = new(id, validName, validFKey, validDateTime);
 
-            bool isValid = new StatementDictionaryValidator(isPKeyValidationRequired).Validate(statementDictionary).IsValid;
+            bool isValid = new StatementDictionaryValidator(willBeInserted).Validate(statementDictionary).IsValid;
 
             Assert.Equal(expected, isValid);
         }
@@ -27,22 +30,21 @@ namespace Vocab.XUnitTest.Unit.Validators
         [InlineData(true, "Dictionary")]
         [InlineData(false, " ")]
         [InlineData(false, "")]
-        public void TestStringRule(bool expected, string name)
+        public void TestNameRule(bool expected, string name)
         {
-            StatementDictionary statementDictionary = new(validId, name, validOwnerId, validDateTime);
+            StatementDictionary statementDictionary = new(validPKey, name, validFKey, validDateTime);
 
-            bool isValid = new StatementDictionaryValidator(true).Validate(statementDictionary).IsValid;
-
+            bool isValid = new StatementDictionaryValidator(validWillBeInserted).Validate(statementDictionary).IsValid;
             Assert.Equal(expected, isValid);
         }
 
         [Fact]
-        public void TestEmptyGuidRule()
+        public void TestEmptyOwnerGuidRule()
         {
             bool expected = false;
-            StatementDictionary statementDictionary = new(validId, validName, Guid.Empty, validDateTime);
+            StatementDictionary statementDictionary = new(validPKey, validName, Guid.Empty, validDateTime);
 
-            bool isValid = new StatementDictionaryValidator(true).Validate(statementDictionary).IsValid;
+            bool isValid = new StatementDictionaryValidator(validWillBeInserted).Validate(statementDictionary).IsValid;
 
             Assert.Equal(expected, isValid);
         }

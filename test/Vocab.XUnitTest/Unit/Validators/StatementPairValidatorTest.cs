@@ -6,16 +6,37 @@ namespace Vocab.XUnitTest.Unit.Validators
 {
     public class StatementPairValidatorTest
     {
-        [Theory]
-        [InlineData(true, 1234, 1234, true)]
-        [InlineData(true, 0, 1234, false)]
-        [InlineData(false, 0, 1234, true)]
-        [InlineData(false, 1234, 0, false)]
-        public void TestIdRules(bool expected, long id, int relatedDictionaryId, bool isPKeyValidationRequired)
-        {
-            StatementPair statementPair = new(id, "Source", "Target", StatementCategory.None, 1, DateTime.Now, relatedDictionaryId);
+        private readonly int validPKey = 1234;
+        private readonly string validSource = "Source";
+        private readonly string validTarget = "Target";
+        private readonly StatementCategory validCategory = StatementCategory.None;
+        private readonly int validLevel = 1;
+        private readonly DateTime validDateTime = DateTime.Now;
+        private readonly int validRelatedDictionaryFKey = 1234;
+        private readonly bool validWillBeInserted = false;
 
-            bool isValid = new StatementPairValidator(isPKeyValidationRequired).Validate(statementPair).IsValid;
+        [Theory]
+        [InlineData(true, 0, true)]
+        [InlineData(true, 1234, false)]
+        [InlineData(false, 1234, true)]
+        [InlineData(false, 0, false)]
+        public void TestPKeyRule(bool expected, long pkey, bool willBeInserted)
+        {
+            StatementPair statementPair = new(pkey, validSource, validTarget, validCategory, 1, validDateTime, validRelatedDictionaryFKey);
+
+            bool isValid = new StatementPairValidator(willBeInserted).Validate(statementPair).IsValid;
+
+            Assert.Equal(expected, isValid);
+        }
+
+        [Theory]
+        [InlineData(true, 1234)]
+        [InlineData(false, 0)]
+        public void TestRelatedDictionaryFKRule(bool expected, long fkey)
+        {
+            StatementPair statementPair = new(validPKey, validSource, validTarget, validCategory, 1, validDateTime, fkey);
+
+            bool isValid = new StatementPairValidator(validWillBeInserted).Validate(statementPair).IsValid;
 
             Assert.Equal(expected, isValid);
         }
@@ -26,9 +47,9 @@ namespace Vocab.XUnitTest.Unit.Validators
         [InlineData(false, "", "Target")]
         public void TestStringRules(bool expected, string source, string target)
         {
-            StatementPair statementPair = new(1234, source, target, StatementCategory.None, 1, DateTime.Now, 1234);
+            StatementPair statementPair = new(1234, source, target, validCategory, 1, validDateTime, validRelatedDictionaryFKey);
 
-            bool isValid = new StatementPairValidator(true).Validate(statementPair).IsValid;
+            bool isValid = new StatementPairValidator(validWillBeInserted).Validate(statementPair).IsValid;
 
             Assert.Equal(expected, isValid);
         }
@@ -38,9 +59,9 @@ namespace Vocab.XUnitTest.Unit.Validators
         [InlineData(false, (StatementCategory)111)]
         public void TestIsInEnumRule(bool expected, StatementCategory statementCategory)
         {
-            StatementPair statementPair = new(1, "Source", "Target", statementCategory, 1, DateTime.Now, 1234);
+            StatementPair statementPair = new(1, validSource, validTarget, statementCategory, 1, validDateTime, validRelatedDictionaryFKey);
 
-            bool isValid = new StatementPairValidator(true).Validate(statementPair).IsValid;
+            bool isValid = new StatementPairValidator(validWillBeInserted).Validate(statementPair).IsValid;
 
             Assert.Equal(expected, isValid);
         }
@@ -52,9 +73,9 @@ namespace Vocab.XUnitTest.Unit.Validators
         [InlineData(false, 6)]
         public void TestGuessingLevelBoundaries(bool expected, int level)
         {
-            StatementPair statementPair = new(1, "Source", "Target", StatementCategory.None, level, DateTime.Now, 1234);
+            StatementPair statementPair = new(1, validSource, validTarget, validCategory, level, validDateTime, validRelatedDictionaryFKey);
 
-            bool isValid = new StatementPairValidator(true).Validate(statementPair).IsValid;
+            bool isValid = new StatementPairValidator(validWillBeInserted).Validate(statementPair).IsValid;
 
             Assert.Equal(expected, isValid);
         }
@@ -62,10 +83,10 @@ namespace Vocab.XUnitTest.Unit.Validators
         [Fact]
         public void TestNullValue()
         {
-            StatementDictionary statementDictionary = new() { Id = 1, LastModified = DateTime.Now, Name = "Test", OwnerId = Guid.Empty };
-            StatementPair statementPair = new(1, "Source", "Target", StatementCategory.None, 1, DateTime.Now, 1234) { StatementsDictionary = statementDictionary };
+            StatementDictionary statementDictionary = new() { Id = validRelatedDictionaryFKey, LastModified = validDateTime, Name = "Test", OwnerId = Guid.Empty };
+            StatementPair statementPair = new(validPKey, validSource, validTarget, validCategory, validLevel, validDateTime, validRelatedDictionaryFKey) { StatementsDictionary = statementDictionary };
 
-            bool isValid = new StatementPairValidator(true).Validate(statementPair).IsValid;
+            bool isValid = new StatementPairValidator(validWillBeInserted).Validate(statementPair).IsValid;
 
             Assert.False(isValid);
         }

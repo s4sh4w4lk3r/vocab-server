@@ -5,9 +5,9 @@ namespace Vocab.Application.Validators
 {
     public class StatementDictionaryValidator : AbstractValidator<StatementDictionary>
     {
-        public StatementDictionaryValidator(bool isIdValidationRequired)
+        public StatementDictionaryValidator(bool willBeInserted)
         {
-            _ = isIdValidationRequired ? RuleFor(sd => sd.Id).NotEmpty() : null;
+            _ = willBeInserted ? RuleFor(sd => sd.Id).Empty() : RuleFor(sd => sd.Id).NotEmpty();
 
             RuleFor(sd => sd.Name).NotEmpty();
             RuleFor(sd => sd.OwnerId).NotEmpty();
