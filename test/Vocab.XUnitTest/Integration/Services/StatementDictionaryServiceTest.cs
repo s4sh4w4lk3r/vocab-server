@@ -7,12 +7,13 @@ using Vocab.Infrastructure.Persistence;
 using Vocab.Infrastructure.Services;
 using Vocab.XUnitTest.Shared;
 
-#pragma warning disable IDE0052 // Remove unread private members
+#pragma warning disable IDE0052
+#pragma warning disable CS0414
 namespace Vocab.XUnitTest.Integration.Services
 {
     [TestCaseOrderer(
     ordererTypeName: "Vocab.XUnitTest.Shared.PriorityOrderer",
-    ordererAssemblyName: PriorityOrderer.ASSMEBLY_NAME)]
+    ordererAssemblyName: Constants.ASSEMBLY_NAME)]
     public class StatementDictionaryServiceTest
     {
         private static readonly ServiceProvider serviceProvider;
@@ -28,7 +29,7 @@ namespace Vocab.XUnitTest.Integration.Services
         {
             ServiceCollection services = new();
             ConfigurationBuilder builder = new();
-            builder.AddUserSecrets("5b793eb0-da62-410a-be80-5f2a05718376");
+            builder.AddUserSecrets(Constants.USER_SECRET_ID);
             IConfigurationRoot configuration = builder.Build();
 
             services.AddDbContext<VocabContext>(options => options.UseNpgsql(configuration.GetConnectionString("Postgres")));
@@ -112,4 +113,5 @@ namespace Vocab.XUnitTest.Integration.Services
 }
 
 
-#pragma warning restore IDE0052 // Remove unread private members
+#pragma warning restore CS0414
+#pragma warning restore IDE0052

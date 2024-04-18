@@ -5,7 +5,6 @@ namespace Vocab.XUnitTest.Shared
 {
     public class PriorityOrderer : ITestCaseOrderer
     {
-        public const string ASSMEBLY_NAME = "Vocab.XUnitTest";
         public IEnumerable<TTestCase> OrderTestCases<TTestCase>(
             IEnumerable<TTestCase> testCases) where TTestCase : ITestCase
         {
