@@ -11,7 +11,7 @@ namespace Vocab.Application.Validators
 
             RuleFor(sd => sd.Name).NotEmpty();
             RuleFor(sd => sd.OwnerId).NotEmpty();
-            RuleFor(sd => sd.LastModified).NotEmpty();
+            RuleFor(sd => sd.LastModified).NotEmpty().Must(dt=>dt.Kind == DateTimeKind.Utc);
 
             RuleFor(sd => sd.StatementPairs).Null();
         }
