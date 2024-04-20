@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using Vocab.Infrastructure.Persistence;
@@ -11,9 +12,11 @@ using Vocab.Infrastructure.Persistence;
 namespace Vocab.WebApi.Migrations
 {
     [DbContext(typeof(VocabContext))]
-    partial class VocabContextModelSnapshot : ModelSnapshot
+    [Migration("20240420132616_AddDefaultGuessingLevel")]
+    partial class AddDefaultGuessingLevel
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

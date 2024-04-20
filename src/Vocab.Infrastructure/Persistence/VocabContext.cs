@@ -17,7 +17,7 @@ namespace Vocab.Infrastructure.Persistence
             {
                 entity.HasKey(e => e.Id);
                 entity.HasOne(e => e.StatementsDictionary).WithMany(e => e.StatementPairs).HasForeignKey(e => e.RelatedDictionaryId).OnDelete(DeleteBehavior.Restrict).IsRequired();
-
+                entity.Property(e => e.GuessingLevel).HasDefaultValue(StatementPair.MIN_GUESSING_LEVEL);
                 entity.ToTable(t => t.HasCheckConstraint("GuessingLevelCheck", $"\"GuessingLevel\" >= {StatementPair.MIN_GUESSING_LEVEL} AND \"GuessingLevel\" <= {StatementPair.MAX_GUESSING_LEVEL}"));
             });
 
