@@ -5,8 +5,8 @@ namespace Vocab.Application.Abstractions.Services
 {
     public interface IStatementDictionaryService
     {
-        public Task<ResultVocab<StatementDictionary>> Insert(StatementDictionary dictionary);
-        public Task<ResultVocab<StatementDictionary>> Update(StatementDictionary dictionary);
+        public Task<ResultVocab<StatementDictionary>> Insert(Guid userId, StatementDictionary dictionary);
+        public Task<ResultVocab<StatementDictionary>> Update(Guid userId, StatementDictionary dictionary);
         public Task<ResultVocab> Delete(Guid userId, long dictionaryId);
 
         public Task<ResultVocab> SetName(Guid userId, long dictionaryId, string name);

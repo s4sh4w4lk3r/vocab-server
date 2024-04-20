@@ -10,13 +10,9 @@ namespace Vocab.Infrastructure.Services
 {
     public class StatementDictionaryService(VocabContext context) : IStatementDictionaryService
     {
-#warning проверить
+#error переписать тесты
         public async Task<ResultVocab> Delete(Guid userId, long dictionaryId)
         {
-            if (userId == default || dictionaryId == default)
-            {
-                return ResultVocab.Fail("userId или dictionaryId имеют пустое значение.");
-            }
             int rowsDeleted = await context.StatementDictionaries.Where(sd => sd.Id == dictionaryId && sd.OwnerId == userId).ExecuteDeleteAsync();
             return rowsDeleted == 1 ? ResultVocab.Ok(ResultMessages.Deleted) : ResultVocab.Ok(ResultMessages.NotFound);
         }
@@ -30,16 +26,21 @@ namespace Vocab.Infrastructure.Services
 
             List<StatementPair> statementPairs = await context.StatementPairs
                 .Where(sp => sp.StatementsDictionary!.Id == dictionaryId && sp.StatementsDictionary.OwnerId == userId)
-                .OrderBy(sp => sp.GuessingLevel).Take(gameLength).ToListAsync() ?? [];
+                .OrderBy(sp => sp.GuessingLevel).Take(count: gameLength).ToListAsync();
             return statementPairs is { Count: > 0 } ? ResultVocab.Ok().AddValue(statementPairs) : ResultVocab.Fail("Словарь пустой.").AddValue(default(List<StatementPair>)); ;
         }
 
-        public async Task<ResultVocab<StatementDictionary>> Insert(StatementDictionary dictionary)
+        public async Task<ResultVocab<StatementDictionary>> Insert(Guid userId, StatementDictionary dictionary)
         {
             var valResult = new StatementDictionaryValidator(willBeInserted: true).Validate(dictionary);
             if (!valResult.IsValid)
             {
                 return ResultVocab.Fail(valResult.ToString()).AddValue(default(StatementDictionary));
+            }
+
+            if (userId != dictionary.OwnerId)
+            {
+                return ResultVocab.Fail("userId не соответствует ownerId.").AddValue(default(StatementDictionary));
             }
 
             await context.StatementDictionaries.AddAsync(dictionary);
@@ -56,13 +57,23 @@ namespace Vocab.Infrastructure.Services
             return rowsUpdated == 1 ? ResultVocab.Ok(ResultMessages.Updated) : ResultVocab.Ok(ResultMessages.UpdateError);
         }
 
-        public async Task<ResultVocab<StatementDictionary>> Update(StatementDictionary dictionary)
+        public async Task<ResultVocab<StatementDictionary>> Update(Guid userId, StatementDictionary dictionary)
         {
             var valResult = new StatementDictionaryValidator(willBeInserted: false).Validate(dictionary);
             if (!valResult.IsValid)
             {
                 return ResultVocab.Fail(valResult.ToString()).AddValue(default(StatementDictionary));
             }
+
+            if (dictionary.OwnerId != userId)
+            {
+                return ResultVocab.Fail("userId не соответствует ownerId.").AddValue(default(StatementDictionary));
+            }
+
+            if (!await context.StatementDictionaries.AnyAsync(sd => sd.OwnerId == userId && sd.Id == dictionary.Id))
+            {
+                return ResultVocab.Fail("Словарь для обновления не найден.").AddValue(default(StatementDictionary));
+            }    
 
             context.StatementDictionaries.Update(dictionary);
             return (await context.TrySaveChangesAsync(ResultMessages.Updated)).AddValue(dictionary);
