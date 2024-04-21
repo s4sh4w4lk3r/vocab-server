@@ -11,7 +11,6 @@ namespace Vocab.Infrastructure.Services
 {
     public class StatementPairService(VocabContext context) : IStatementPairService
     {
-#error переписать тесты
         public async Task<ResultVocab<StatementPair>> Insert(Guid userId, StatementPair statementPair)
         {
             var valResult = new StatementPairValidator(willBeInserted: true).Validate(statementPair);

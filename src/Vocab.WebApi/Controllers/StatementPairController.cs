@@ -1,12 +1,15 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using System.ComponentModel.DataAnnotations;
 using System.Net;
 using Vocab.Application.Abstractions.Services;
+using Vocab.Application.ValueObjects;
 
 namespace Vocab.WebApi.Controllers
 {
     [ApiController, Route("statement-pairs")]
     public class StatementPairController(IStatementPairService statementPairService) : ControllerBase
     {
+#warning проверить
         [HttpPut]
         public IActionResult Put()
         {
@@ -26,16 +29,10 @@ namespace Vocab.WebApi.Controllers
         }
 
 
-        [HttpPatch, Route("{id}/rating/increase")]
-        public IActionResult IncreaseRating(ulong id)
+        [HttpPatch, Route("{id}/rating")]
+        public async Task<IActionResult> PatchRating(ulong id, [FromQuery, Required] string action)
         {
-            return StatusCode(((int)HttpStatusCode.NotImplemented));
-        }
-
-        [HttpPatch, Route("{id}/rating/decrease")]
-        public IActionResult DecreaseRating(ulong id)
-        {
-            return StatusCode(((int)HttpStatusCode.NotImplemented));
+            // https://daninacan.com/how-to-use-enums-in-asp-net-core-routes/
         }
 
         [HttpGet, Route("{id}/rating")]

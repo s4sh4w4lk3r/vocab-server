@@ -10,7 +10,6 @@ namespace Vocab.Infrastructure.Services
 {
     public class StatementDictionaryService(VocabContext context) : IStatementDictionaryService
     {
-#error переписать тесты
         public async Task<ResultVocab> Delete(Guid userId, long dictionaryId)
         {
             int rowsDeleted = await context.StatementDictionaries.Where(sd => sd.Id == dictionaryId && sd.OwnerId == userId).ExecuteDeleteAsync();
