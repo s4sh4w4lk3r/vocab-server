@@ -1,4 +1,3 @@
-using HotChocolate.Types;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
@@ -53,7 +52,6 @@ namespace Vocab.WebApi
             builder.Services.AddAuthorizationVocab(kcConfiguration);
 
             builder.Services.AddSwaggerVocab();
-            builder.Services.AddGraphQLVocab(isDevelopment: builder.Environment.IsDevelopment());
 
             // -------------------------------------------------------------------------------------------------------------------------- >8
 
@@ -72,14 +70,12 @@ namespace Vocab.WebApi
 
             app.UseCors(o => o.AllowAnyMethod().AllowAnyHeader().WithOrigins(origins));
 
-            app.MapGraphQL().RequireAuthorization();
             app.MapControllers().RequireAuthorization();
 
             if (app.Environment.IsDevelopment())
             {
                 app.UseSwagger();
                 app.UseSwaggerUI();
-                app.MapBananaCakePop().AllowAnonymous();
                 //db.Database.EnsureCreated();
             }
 

@@ -1,10 +1,8 @@
-﻿using HotChocolate.Types;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
+﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using System.Reflection;
 using Vocab.Infrastructure.Configuration;
-using Vocab.Infrastructure.GraphQL;
 
 namespace Vocab.WebApi.Extensions
 {
@@ -45,15 +43,6 @@ namespace Vocab.WebApi.Extensions
                     }
                 });
             });
-        }
-        public static void AddGraphQLVocab(this IServiceCollection services, bool isDevelopment)
-        {
-            services.AddGraphQLServer()
-            .ModifyOptions(options => { options.DefaultBindingBehavior = BindingBehavior.Implicit; })
-            .AllowIntrospection(isDevelopment)
-            .ModifyRequestOptions(o => o.OnlyAllowPersistedQueries = !isDevelopment)
-            .UsePersistedQueryPipeline().AddReadOnlyFileSystemQueryStorage("./../Vocab.Infrastructure/GraphQL/PersistedQueries")
-            .AddQueryType<Query>().AddProjections().AddFiltering().AddSorting().AddAuthorization();
         }
         public static void AddAuthenticationVocab(this IServiceCollection services, KeycloakConfiguration keycloakConfiguration)
         {
