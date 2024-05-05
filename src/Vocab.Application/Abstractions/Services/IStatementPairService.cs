@@ -4,7 +4,7 @@ using Vocab.Core.Enums;
 
 namespace Vocab.Application.Abstractions.Services
 {
-    public interface IStatementPairService : IRatingService
+    public interface IStatementPairService
     {
         public Task<ResultVocab<StatementPair>> Insert(Guid userId, StatementPair statementPair);
         public Task<ResultVocab<StatementPair>> Update(Guid userId, StatementPair statementPair);
