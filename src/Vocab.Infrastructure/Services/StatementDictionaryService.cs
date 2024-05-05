@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Throw;
 using Vocab.Application.Abstractions.Services;
 using Vocab.Application.Constants;
 using Vocab.Application.Validators;
@@ -12,12 +13,18 @@ namespace Vocab.Infrastructure.Services
     {
         public async Task<ResultVocab> Delete(Guid userId, long dictionaryId)
         {
+            userId.Throw().IfDefault();
+            dictionaryId.Throw().IfDefault();
+
             int rowsDeleted = await context.StatementDictionaries.Where(sd => sd.Id == dictionaryId && sd.OwnerId == userId).ExecuteDeleteAsync();
             return rowsDeleted == 1 ? ResultVocab.Ok(ResultMessages.Deleted) : ResultVocab.Ok(ResultMessages.NotFound);
         }
 
         public async Task<ResultVocab<List<StatementPair>>> GetStatementsForChallenge(Guid userId, long dictionaryId, int gameLength = 25)
         {
+            userId.Throw().IfDefault();
+            dictionaryId.Throw().IfDefault();
+
             if (gameLength > 150 || gameLength < 5)
             {
                 return ResultVocab.Fail("Количество слов для игры должно быть не меньше 5 и не более 150.").AddValue(default(List<StatementPair>));
@@ -31,6 +38,9 @@ namespace Vocab.Infrastructure.Services
 
         public async Task<ResultVocab<StatementDictionary>> Insert(Guid userId, StatementDictionary dictionary)
         {
+            userId.Throw().IfDefault();
+            dictionary.ThrowIfNull();
+
             var valResult = new StatementDictionaryValidator(willBeInserted: true).Validate(dictionary);
             if (!valResult.IsValid)
             {
@@ -48,16 +58,19 @@ namespace Vocab.Infrastructure.Services
 
         public async Task<ResultVocab> SetName(Guid userId, long dictionaryId, string name)
         {
-            if (string.IsNullOrWhiteSpace(name))
-            {
-                return ResultVocab.Fail("Имя не должно быть пустым.");
-            }
+            userId.Throw().IfDefault();
+            dictionaryId.Throw().IfDefault();
+            name.ThrowIfNull().IfEmpty().IfWhiteSpace();
+
             int rowsUpdated = await context.StatementDictionaries.Where(sd => sd.OwnerId == userId && sd.Id == dictionaryId).ExecuteUpdateAsync(sd => sd.SetProperty(p => p.Name, name));
             return rowsUpdated == 1 ? ResultVocab.Ok(ResultMessages.Updated) : ResultVocab.Ok(ResultMessages.UpdateError);
         }
 
         public async Task<ResultVocab<StatementDictionary>> Update(Guid userId, StatementDictionary dictionary)
         {
+            userId.Throw().IfDefault();
+            dictionary.ThrowIfNull();
+
             var valResult = new StatementDictionaryValidator(willBeInserted: false).Validate(dictionary);
             if (!valResult.IsValid)
             {

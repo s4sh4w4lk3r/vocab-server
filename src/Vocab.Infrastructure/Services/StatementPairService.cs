@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Throw;
 using Vocab.Application.Abstractions.Services;
 using Vocab.Application.Constants;
 using Vocab.Application.Validators;
@@ -13,6 +14,9 @@ namespace Vocab.Infrastructure.Services
     {
         public async Task<ResultVocab<StatementPair>> Insert(Guid userId, StatementPair statementPair)
         {
+            userId.Throw().IfDefault();
+            statementPair.ThrowIfNull();
+
             var valResult = new StatementPairValidator(willBeInserted: true).Validate(statementPair);
             if (!valResult.IsValid)
             {
@@ -31,19 +35,37 @@ namespace Vocab.Infrastructure.Services
 
         public async Task<ResultVocab> Delete(Guid userId, long statementPairId)
         {
+            userId.Throw().IfDefault();
+            statementPairId.Throw().IfDefault();
+
             int rowsDeleted = await context.StatementPairs
                 .Where(sp => sp.StatementsDictionary!.OwnerId == userId && sp.Id == statementPairId).ExecuteDeleteAsync();
             return rowsDeleted == 1 ? ResultVocab.Ok(ResultMessages.Deleted) : ResultVocab.Ok(ResultMessages.NotFound);
         }
 
-        public async Task<ResultVocab> SetSource(Guid userId, long statementPairId, string source) 
-            => await ExecuteUpdateProperty(userId, statementPairId, x => x.Source, source);
+        public async Task<ResultVocab> SetSource(Guid userId, long statementPairId, string source)
+        {
+            userId.Throw().IfDefault();
+            statementPairId.Throw().IfDefault();
+            source.ThrowIfNull().IfEmpty().IfWhiteSpace();
 
-        public async Task<ResultVocab> SetTarget(Guid userId, long statementPairId, string target) 
-            => await ExecuteUpdateProperty(userId, statementPairId, x => x.Target, target);
+            return await ExecuteUpdateProperty(userId, statementPairId, x => x.Source, source);
+        }
+
+        public async Task<ResultVocab> SetTarget(Guid userId, long statementPairId, string target)
+        {
+            userId.Throw().IfDefault();
+            statementPairId.Throw().IfDefault();
+            target.ThrowIfNull().IfEmpty().IfWhiteSpace();
+
+            return await ExecuteUpdateProperty(userId, statementPairId, x => x.Target, target);
+        }
 
         public async Task<ResultVocab<StatementPair>> Update(Guid userId, StatementPair statementPair)
         {
+            userId.Throw().IfDefault();
+            statementPair.ThrowIfNull();
+
             if (!await context.StatementDictionaries.AnyAsync(sd=>sd.OwnerId == userId && sd.Id == statementPair.RelatedDictionaryId))
             {
                 return ResultVocab.Fail("userId не соответствует ownerId или указанный словарь не найден.").AddValue(default(StatementPair));
@@ -52,55 +74,21 @@ namespace Vocab.Infrastructure.Services
             context.StatementPairs.Update(statementPair);
             return (await context.TrySaveChangesAsync(ResultMessages.Added)).AddValue(statementPair);
         }
-
-        public async Task<ResultVocab<int>> Decrease(Guid userId, long statementPairId)
-        {
-            var statementPair = await context.StatementPairs
-                .SingleOrDefaultAsync(sp => sp.StatementsDictionary!.OwnerId == userId && sp.Id == statementPairId);
-            if (statementPair is null)
-            {
-                return ResultVocab.Fail("Выражение не найдено.").AddValue(-1);
-            }
-
-            if (statementPair.GuessingLevel == 1)
-            {
-                return ResultVocab.Fail("Не требуется уменьшать рейтинг.").AddValue(statementPair.GuessingLevel);
-            }
-
-            statementPair.DecreaseRating();
-            return(await context.TrySaveChangesAsync(ResultMessages.Updated)).AddValue(statementPair.GuessingLevel);
-        }
-
-        public async Task<ResultVocab<int>> Increase(Guid userId, long statementPairId)
-        {
-            var statementPair = await context.StatementPairs
-                .SingleOrDefaultAsync(sp => sp.StatementsDictionary!.OwnerId == userId && sp.Id == statementPairId);
-            if (statementPair is null)
-            {
-                return ResultVocab.Fail("Выражение не найдено.").AddValue(-1);
-            }
-
-            if (statementPair.GuessingLevel == 5)
-            {
-                return ResultVocab.Fail("Не требуется увеличивать рейтинг.").AddValue(statementPair.GuessingLevel);
-            }
-
-            statementPair.IncreaseRating();
-            return (await context.TrySaveChangesAsync(ResultMessages.Updated)).AddValue(statementPair.GuessingLevel);
-        }
-
         public async Task<ResultVocab> SetCategory(Guid userId, long statementPairId, StatementCategory category)
         {
-            if (!Enum.IsDefined(category))
-            {
-                return ResultVocab.Fail("Неправильно указана категория.").AddValue(default(StatementPair));
-            }
+            userId.Throw().IfDefault();
+            statementPairId.Throw().IfDefault();
+            category.Throw().IfOutOfRange();
 
             return await ExecuteUpdateProperty(userId, statementPairId, x => x.StatementCategory, category);
         }
 
         private async Task<ResultVocab> ExecuteUpdateProperty<TProperty>(Guid userId, long statementPairId, Func<StatementPair, TProperty> func, TProperty value)
         {
+            userId.Throw().IfDefault();
+            statementPairId.Throw().IfDefault();
+            func.ThrowIfNull();
+
             int rowsUpdated = await context.StatementPairs
                 .Where(sp => sp.StatementsDictionary!.OwnerId == userId && sp.Id == statementPairId)
                 .ExecuteUpdateAsync(sp => sp.SetProperty(func, value));
