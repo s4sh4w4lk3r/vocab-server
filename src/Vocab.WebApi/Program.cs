@@ -3,8 +3,10 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Serilog;
 using Throw;
+using Vocab.Application.Abstractions.Services;
 using Vocab.Infrastructure.Configuration;
 using Vocab.Infrastructure.Persistence;
+using Vocab.Infrastructure.Services;
 using Vocab.WebApi.Extensions;
 
 namespace Vocab.WebApi
@@ -52,6 +54,10 @@ namespace Vocab.WebApi
             builder.Services.AddAuthorizationVocab(kcConfiguration);
 
             builder.Services.AddSwaggerVocab();
+
+            builder.Services.AddScoped<IRatingService, RatingService>();
+            builder.Services.AddScoped<IStatementDictionaryService, StatementDictionaryService>();
+            builder.Services.AddScoped<IStatementPairService, StatementPairService>();
 
             // -------------------------------------------------------------------------------------------------------------------------- >8
 

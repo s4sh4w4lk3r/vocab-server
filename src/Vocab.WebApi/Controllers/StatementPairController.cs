@@ -1,8 +1,8 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using System.ComponentModel.DataAnnotations;
-using System.Net;
 using Vocab.Application.Abstractions.Services;
-using Vocab.Application.ValueObjects;
+using Vocab.Core.Enums;
+using Vocab.WebApi.Extensions;
+using Vocab.WebApi.Models;
 
 namespace Vocab.WebApi.Controllers
 {
@@ -10,35 +10,44 @@ namespace Vocab.WebApi.Controllers
     public class StatementPairController(IStatementPairService statementPairService) : ControllerBase
     {
 #warning проверить
-        [HttpPut]
-        public IActionResult Put()
+        [HttpPatch, Route("{id:long:min(1)}/set/source/{sourceValue:required:minlength(1)}")] 
+        public async Task<IActionResult> SetSource(long id, string sourceValue)
         {
-            return StatusCode(((int)HttpStatusCode.NotImplemented));
+            Guid userGuid = this.GetUserGuid();
+            var result = await statementPairService.SetSource(userGuid, id, sourceValue);
+            return result.ToActionResult();
         }
 
-        [HttpDelete, Route("{id}")]
-        public IActionResult Delete(ulong id)
+        [HttpPatch, Route("{id:long:min(1)}/set/target/{targetValue:required:minlength(1)}")]
+        public async Task<IActionResult> SetTarget(long id, string targetValue)
         {
-            return StatusCode(((int)HttpStatusCode.NotImplemented));
+            Guid userGuid = this.GetUserGuid();
+            var result = await statementPairService.SetTarget(userGuid, id, targetValue);
+            return result.ToActionResult();
         }
 
-        [HttpPatch]
-        public IActionResult Patch()
+        [HttpPatch, Route("{id:long:min(1)}/set/category/{categoryValue}")]
+        public async Task<IActionResult> SetCategory(long id, StatementCategory categoryValue)
         {
-            return StatusCode(((int)HttpStatusCode.NotImplemented));
+            Guid userGuid = this.GetUserGuid();
+            var result = await statementPairService.SetCategory(userGuid, id, categoryValue);
+            return result.ToActionResult();
         }
 
-
-        [HttpPatch, Route("{id}/rating")]
-        public async Task<IActionResult> PatchRating(ulong id, [FromQuery, Required] string action)
+        [HttpDelete, Route("{id:long:min(1)}")]
+        public async Task<IActionResult> Delete(long id)
         {
-            // https://daninacan.com/how-to-use-enums-in-asp-net-core-routes/
+            Guid userGuid = this.GetUserGuid();
+            var result = await statementPairService.Delete(userGuid, id);
+            return result.ToActionResult();
         }
 
-        [HttpGet, Route("{id}/rating")]
-        public IActionResult GetRating(ulong id)
+        [HttpPost]
+        public async Task<IActionResult> Add(StatementPairDto statementPairDto)
         {
-            return StatusCode(((int)HttpStatusCode.NotImplemented));
+            Guid userGuid = this.GetUserGuid();
+            var result = await statementPairService.Insert(userGuid, statementPairDto.ToEntity());
+            return result.ToActionResult();
         }
     }
 }
