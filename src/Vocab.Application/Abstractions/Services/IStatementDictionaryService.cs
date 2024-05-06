@@ -1,4 +1,5 @@
-﻿using Vocab.Application.ValueObjects;
+﻿using Vocab.Application.Types;
+using Vocab.Application.ValueObjects;
 using Vocab.Core.Entities;
 
 namespace Vocab.Application.Abstractions.Services
@@ -11,5 +12,6 @@ namespace Vocab.Application.Abstractions.Services
 
         public Task<ResultVocab> SetName(Guid userId, long dictionaryId, string name);
         public Task<ResultVocab<List<StatementPair>>> GetStatementsForChallenge(Guid userId, long dictionaryId, int gameLength = 25);
+        public Task<ResultVocab<ImportStatementsResult>> ImportStatements(Guid userId, long dictionaryId, Stream stream, string separator = " - ");
     }   
 }
