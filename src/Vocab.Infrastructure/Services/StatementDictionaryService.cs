@@ -21,20 +21,41 @@ namespace Vocab.Infrastructure.Services
             return rowsDeleted == 1 ? ResultVocab.Ok(ResultMessages.Deleted) : ResultVocab.Ok(ResultMessages.NotFound);
         }
 
-        public async Task<ResultVocab<List<StatementPair>>> GetStatementsForChallenge(Guid userId, long dictionaryId, int gameLength = 25)
+        public async Task<ResultVocab<ChallengeStatementsPair[]>> GetStatementsForChallenge(Guid userId, long dictionaryId, int gameLength = 25)
         {
+            const int MIN_WORDS_REQUIRED = 5;
+
             userId.Throw().IfDefault();
             dictionaryId.Throw().IfDefault();
 
-            if (gameLength > 150 || gameLength < 5)
+            if (gameLength > 150 || MIN_WORDS_REQUIRED < 5)
             {
-                return ResultVocab.Fail("Количество слов для игры должно быть не меньше 5 и не более 150.").AddValue(default(List<StatementPair>));
+                return ResultVocab.Fail($"Количество слов для игры должно быть не меньше {MIN_WORDS_REQUIRED} и не более 150.").AddValue(default(ChallengeStatementsPair[]));
             }
 
-            List<StatementPair> statementPairs = await context.StatementPairs
+            StatementPair[] statementPairs = await context.StatementPairs
                 .Where(sp => sp.StatementsDictionary!.Id == dictionaryId && sp.StatementsDictionary.OwnerId == userId)
-                .OrderBy(sp => sp.GuessingLevel).Take(count: gameLength).ToListAsync();
-            return statementPairs is { Count: > 0 } ? ResultVocab.Ok().AddValue(statementPairs) : ResultVocab.Fail("Словарь пустой.").AddValue(default(List<StatementPair>)); ;
+                .OrderBy(sp => sp.GuessingLevel).Take(count: gameLength).ToArrayAsync();
+
+            if (statementPairs is { Length: 0 })
+            {
+                return ResultVocab.Fail("Словарь пустой или его не существует.").AddValue(default(ChallengeStatementsPair[]));
+            }
+
+            if (statementPairs is { Length: < MIN_WORDS_REQUIRED })
+            {
+                return ResultVocab.Fail("В словаре недостаточно слов для игры.").AddValue(default(ChallengeStatementsPair[]));
+            }
+
+            ChallengeStatementsPair[] challengeStatements = statementPairs.Select(x =>
+            {
+                string randomTarget = Random.Shared.GetItems(statementPairs, 1).Select(rx=>rx.Target).Single();
+
+                return int.IsEvenInteger(Random.Shared.Next(6546754)) ? 
+                    new ChallengeStatementsPair(x.Id, x.Source, randomTarget, x.Target) : new ChallengeStatementsPair(x.Id, x.Source, x.Target, randomTarget);
+            }).ToArray();
+
+            return ResultVocab.Ok().AddValue(challengeStatements);
         }
 
         public async Task<ResultVocab<ImportStatementsResult>> ImportStatements(Guid userId, long dictionaryId, Stream stream, string separator = " - ")

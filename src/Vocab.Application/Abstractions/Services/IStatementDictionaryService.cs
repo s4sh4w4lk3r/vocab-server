@@ -11,7 +11,7 @@ namespace Vocab.Application.Abstractions.Services
         public Task<ResultVocab> Delete(Guid userId, long dictionaryId);
 
         public Task<ResultVocab> SetName(Guid userId, long dictionaryId, string name);
-        public Task<ResultVocab<List<StatementPair>>> GetStatementsForChallenge(Guid userId, long dictionaryId, int gameLength = 25);
+        public Task<ResultVocab<ChallengeStatementsPair[]>> GetStatementsForChallenge(Guid userId, long dictionaryId, int gameLength = 25);
         public Task<ResultVocab<ImportStatementsResult>> ImportStatements(Guid userId, long dictionaryId, Stream stream, string separator = " - ");
     }   
 }
