@@ -42,5 +42,15 @@ namespace Vocab.WebApi.Controllers
             var result = await service.GetStatementsForChallenge(userId, dictionaryId, gameLength);
             return result.Success ? Ok(result) : BadRequest(result);
         }
+
+        [HttpPost, Route("{dictionaryId}/import")]
+        public async Task<IActionResult> ImportStatements([FromRoute] long dictionaryId, IFormFile statements)
+        {
+            Guid userId = this.GetUserGuid();
+            using Stream stream = statements.OpenReadStream();
+
+            var result = await service.ImportStatements(userId, dictionaryId, stream);
+            return result.Success ? Ok(result) : BadRequest(result);
+        }
     }
 }
