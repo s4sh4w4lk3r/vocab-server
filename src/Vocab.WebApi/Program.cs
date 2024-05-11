@@ -13,7 +13,7 @@ namespace Vocab.WebApi
 {
     public class Program
     {
-        public static void Main(string[] args)
+        public static async Task Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
 
@@ -88,7 +88,21 @@ namespace Vocab.WebApi
             // -------------------------------------------------------------------------------------------------------------------------- >8
 
             db.Database.CanConnect().Throw(_ => new InvalidOperationException("Не получилось подключиться к базе данных.")).IfFalse();
-            // TODO: добавить проверку кейклока через http.
+            using (HttpClient httpClient = new())
+            {
+                Uri uri = new(kcConfiguration.MetadataAddress);
+                string kcExceptionMessage = "Не получилось подключиться к серверу аутентификации.";
+                try
+                {
+                    bool isSuccess = (await httpClient.GetAsync(uri)).IsSuccessStatusCode;
+                    isSuccess.Throw(_ => new InvalidOperationException(kcExceptionMessage)).IfFalse();
+                }
+                catch (HttpRequestException ex)
+                {
+                    throw new InvalidOperationException(kcExceptionMessage, ex);
+                }
+
+            }
 
             // -------------------------------------------------------------------------------------------------------------------------- >8
             app.Run();
