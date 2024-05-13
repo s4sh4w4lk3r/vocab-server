@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics.CodeAnalysis;
+using System.Text.Json.Serialization;
 using Vocab.Core.Enums;
 
 namespace Vocab.Core.Entities
@@ -20,7 +21,7 @@ namespace Vocab.Core.Entities
         public required DateTime LastModified { get; init; }
 
         public required long RelatedDictionaryId { get; init; }
-        public StatementDictionary? StatementsDictionary { get; init; }
+        [JsonIgnore] public StatementDictionary? StatementsDictionary { get; init; }
 
         public const int MIN_GUESSING_LEVEL = 1, MAX_GUESSING_LEVEL = 5;
         public int IncreaseRating() => GuessingLevel < MAX_GUESSING_LEVEL ? ++GuessingLevel : GuessingLevel;

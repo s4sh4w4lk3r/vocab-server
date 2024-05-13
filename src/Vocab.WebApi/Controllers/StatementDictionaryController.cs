@@ -16,7 +16,7 @@ namespace Vocab.WebApi.Controllers
             Guid userId = this.GetUserGuid();
             StatementDictionary statementDictionary = new(default, name, userId, DateTime.UtcNow);
             var result = await service.Insert(userId, statementDictionary);
-            return result.Success ? Ok(result) : BadRequest(result);
+            return result.ToActionResult();
         }
 
         [HttpDelete, Route("{dictionaryId}")]
@@ -24,7 +24,7 @@ namespace Vocab.WebApi.Controllers
         {
             Guid userId = this.GetUserGuid();
             var result = await service.Delete(userId, dictionaryId);
-            return result.Success ? Ok(result) : BadRequest(result);
+            return result.ToActionResult();
         }
 
         [HttpPatch, Route("{dictionaryId}")]
@@ -32,7 +32,7 @@ namespace Vocab.WebApi.Controllers
         {
             Guid userId = this.GetUserGuid();
             var result = await service.SetName(userId, dictionaryId, name);
-            return result.Success ? Ok(result) : BadRequest(result);
+            return result.ToActionResult();
         }
 
         [HttpGet, Route("{dictionaryId}/challenge")]
@@ -40,7 +40,7 @@ namespace Vocab.WebApi.Controllers
         {
             Guid userId = this.GetUserGuid();
             var result = await service.GetStatementsForChallenge(userId, dictionaryId, gameLength);
-            return result.Success ? Ok(result) : BadRequest(result);
+            return result.ToActionResult();
         }
 
         [HttpPost, Route("{dictionaryId}/import")]
@@ -50,7 +50,7 @@ namespace Vocab.WebApi.Controllers
             using Stream stream = statements.OpenReadStream();
 
             var result = await service.ImportStatements(userId, dictionaryId, stream);
-            return result.Success ? Ok(result) : BadRequest(result);
+            return result.ToActionResult();
         }
     }
 }
