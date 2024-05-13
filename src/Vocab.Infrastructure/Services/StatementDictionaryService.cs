@@ -18,7 +18,7 @@ namespace Vocab.Infrastructure.Services
             dictionaryId.Throw().IfDefault();
 
             int rowsDeleted = await context.StatementDictionaries.Where(sd => sd.Id == dictionaryId && sd.OwnerId == userId).ExecuteDeleteAsync();
-            return rowsDeleted == 1 ? ResultVocab.Ok(ResultMessages.Deleted) : ResultVocab.Ok(ResultMessages.NotFound);
+            return rowsDeleted == 1 ? ResultVocab.Ok(ResultMessages.Deleted) : ResultVocab.Fail(ResultMessages.NotFound);
         }
 
         public async Task<ResultVocab<ChallengeStatementsPair[]>> GetStatementsForChallenge(Guid userId, long dictionaryId, int gameLength = 25)
@@ -56,6 +56,24 @@ namespace Vocab.Infrastructure.Services
             }).ToArray();
 
             return ResultVocab.Ok().AddValue(challengeStatements);
+        }
+
+        public async Task<ResultVocab<StatementDictionary>> GetById(Guid userId, long dictionaryId)
+        {
+            userId.Throw().IfDefault();
+            dictionaryId.Throw().IfDefault();
+
+            StatementDictionary? statementDictionary = await context.StatementDictionaries.SingleOrDefaultAsync(x=>x.Id == dictionaryId && x.OwnerId == userId);
+            return statementDictionary is not null ? ResultVocab.Ok().AddValue(statementDictionary) : ResultVocab.Fail(ResultMessages.NotFound).AddValue(default(StatementDictionary));
+        }
+
+        public async Task<ResultVocab<StatementDictionary[]>> GetUserDictionaries(Guid userId, int offset = 0)
+        {
+            userId.Throw().IfDefault();
+            offset.Throw().IfNegative();
+
+            StatementDictionary[] statementDictionaries = await context.StatementDictionaries.Where(x => x.OwnerId == userId).Skip(offset).Take(15).ToArrayAsync();
+            return ResultVocab.Ok().AddValue(statementDictionaries);
         }
 
         public async Task<ResultVocab<ImportStatementsResult>> ImportStatements(Guid userId, long dictionaryId, Stream stream, string separator = " - ")
@@ -139,7 +157,7 @@ namespace Vocab.Infrastructure.Services
             name.ThrowIfNull().IfEmpty().IfWhiteSpace();
 
             int rowsUpdated = await context.StatementDictionaries.Where(sd => sd.OwnerId == userId && sd.Id == dictionaryId).ExecuteUpdateAsync(sd => sd.SetProperty(p => p.Name, name));
-            return rowsUpdated == 1 ? ResultVocab.Ok(ResultMessages.Updated) : ResultVocab.Ok(ResultMessages.UpdateError);
+            return rowsUpdated == 1 ? ResultVocab.Ok(ResultMessages.Updated) : ResultVocab.Fail(ResultMessages.UpdateError);
         }
 
         public async Task<ResultVocab<StatementDictionary>> Update(Guid userId, StatementDictionary dictionary)

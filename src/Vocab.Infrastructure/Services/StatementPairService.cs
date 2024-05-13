@@ -40,7 +40,7 @@ namespace Vocab.Infrastructure.Services
 
             int rowsDeleted = await context.StatementPairs
                 .Where(sp => sp.StatementsDictionary!.OwnerId == userId && sp.Id == statementPairId).ExecuteDeleteAsync();
-            return rowsDeleted == 1 ? ResultVocab.Ok(ResultMessages.Deleted) : ResultVocab.Ok(ResultMessages.NotFound);
+            return rowsDeleted == 1 ? ResultVocab.Ok(ResultMessages.Deleted) : ResultVocab.Fail(ResultMessages.NotFound);
         }
 
         public async Task<ResultVocab> SetSource(Guid userId, long statementPairId, string source)
@@ -92,7 +92,32 @@ namespace Vocab.Infrastructure.Services
             int rowsUpdated = await context.StatementPairs
                 .Where(sp => sp.StatementsDictionary!.OwnerId == userId && sp.Id == statementPairId)
                 .ExecuteUpdateAsync(sp => sp.SetProperty(func, value));
-            return rowsUpdated == 1 ? ResultVocab.Ok(ResultMessages.Updated) : ResultVocab.Ok(ResultMessages.UpdateError);
+            return rowsUpdated == 1 ? ResultVocab.Ok(ResultMessages.Updated) : ResultVocab.Fail(ResultMessages.NotFound);
+        }
+
+        public async Task<ResultVocab<StatementPair>> GetById(Guid userId, long statementPairId)
+        {
+            userId.Throw().IfDefault();
+            statementPairId.Throw().IfDefault();
+
+            StatementPair? statementPair = await context.StatementPairs.SingleOrDefaultAsync(x => x.Id == statementPairId && x.StatementsDictionary!.OwnerId == userId);
+            return statementPair is not null ? ResultVocab.Ok().AddValue(statementPair) : ResultVocab.Fail(ResultMessages.NotFound).AddValue(default(StatementPair));
+        }
+
+        public async Task<ResultVocab<StatementPair[]>> GetDictionaryStatementPairs(Guid userId, long dictionaryId, int offset = 0)
+        {
+            userId.Throw().IfDefault();
+            dictionaryId.Throw().IfDefault();
+            offset.Throw().IfNegative();
+
+            bool isDictionaryExists = await context.StatementDictionaries.AnyAsync(x => x.Id == dictionaryId && x.OwnerId == userId);
+            if (isDictionaryExists is false)
+            {
+                return ResultVocab.Fail(ResultMessages.NotFound).AddValue(default(StatementPair[]));
+            }
+
+            StatementPair[] statementPairs = await context.StatementPairs.Where(x => x.RelatedDictionaryId == dictionaryId).Skip(offset).Take(150).ToArrayAsync();
+            return ResultVocab.Ok().AddValue(statementPairs);
         }
     }
 }
