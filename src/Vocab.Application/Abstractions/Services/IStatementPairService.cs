@@ -10,7 +10,7 @@ namespace Vocab.Application.Abstractions.Services
         public Task<ResultVocab<StatementPair>> Update(Guid userId, StatementPair statementPair);
         public Task<ResultVocab> Delete(Guid userId, long statementPairId);
         public Task<ResultVocab<StatementPair>> GetById(Guid userId, long statementPairId);
-        public Task<ResultVocab<StatementPair[]>> GetDictionaryStatementPairs(Guid userId, long dictionaryId, int offset = 0);
+        public Task<ResultVocab<StatementPair[]>> GetDictionaryStatementPairs(Guid userId, long dictionaryId, int offset);
 
         public Task<ResultVocab> SetSource(Guid userId, long statementPairId, string source);
         public Task<ResultVocab> SetTarget(Guid userId, long statementPairId, string target);

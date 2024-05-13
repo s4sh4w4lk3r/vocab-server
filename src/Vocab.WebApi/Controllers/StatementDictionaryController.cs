@@ -19,7 +19,7 @@ namespace Vocab.WebApi.Controllers
             return result.ToActionResult();
         }
 
-        [HttpDelete, Route("{dictionaryId}")]
+        [HttpDelete, Route("{dictionaryId:long:min(1)}")]
         public async Task<IActionResult> Delete([FromRoute] long dictionaryId)
         {
             Guid userId = this.GetUserGuid();
@@ -27,7 +27,7 @@ namespace Vocab.WebApi.Controllers
             return result.ToActionResult();
         }
 
-        [HttpPatch, Route("{dictionaryId}")]
+        [HttpPatch, Route("{dictionaryId:long:min(1)}")]
         public async Task<IActionResult> Rename([FromRoute] long dictionaryId, [FromQuery, Required] string name)
         {
             Guid userId = this.GetUserGuid();
@@ -35,7 +35,7 @@ namespace Vocab.WebApi.Controllers
             return result.ToActionResult();
         }
 
-        [HttpGet, Route("{dictionaryId}/challenge")]
+        [HttpGet, Route("{dictionaryId:long:min(1)}/challenge")]
         public async Task<IActionResult> GetStatementsForChallenge([FromRoute] long dictionaryId, [FromQuery] int gameLength = 25)
         {
             Guid userId = this.GetUserGuid();
@@ -43,7 +43,7 @@ namespace Vocab.WebApi.Controllers
             return result.ToActionResult();
         }
 
-        [HttpPost, Route("{dictionaryId}/import")]
+        [HttpPost, Route("{dictionaryId:long:min(1)}/import")]
         public async Task<IActionResult> ImportStatements([FromRoute] long dictionaryId, IFormFile statements)
         {
             Guid userId = this.GetUserGuid();

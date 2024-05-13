@@ -104,7 +104,7 @@ namespace Vocab.Infrastructure.Services
             return statementPair is not null ? ResultVocab.Ok().AddValue(statementPair) : ResultVocab.Fail(ResultMessages.NotFound).AddValue(default(StatementPair));
         }
 
-        public async Task<ResultVocab<StatementPair[]>> GetDictionaryStatementPairs(Guid userId, long dictionaryId, int offset = 0)
+        public async Task<ResultVocab<StatementPair[]>> GetDictionaryStatementPairs(Guid userId, long dictionaryId, int offset)
         {
             userId.Throw().IfDefault();
             dictionaryId.Throw().IfDefault();

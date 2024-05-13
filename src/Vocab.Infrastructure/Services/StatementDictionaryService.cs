@@ -21,7 +21,7 @@ namespace Vocab.Infrastructure.Services
             return rowsDeleted == 1 ? ResultVocab.Ok(ResultMessages.Deleted) : ResultVocab.Fail(ResultMessages.NotFound);
         }
 
-        public async Task<ResultVocab<ChallengeStatementsPair[]>> GetStatementsForChallenge(Guid userId, long dictionaryId, int gameLength = 25)
+        public async Task<ResultVocab<ChallengeStatementsPair[]>> GetStatementsForChallenge(Guid userId, long dictionaryId, int gameLength)
         {
             const int MIN_WORDS_REQUIRED = 5;
 
@@ -67,7 +67,7 @@ namespace Vocab.Infrastructure.Services
             return statementDictionary is not null ? ResultVocab.Ok().AddValue(statementDictionary) : ResultVocab.Fail(ResultMessages.NotFound).AddValue(default(StatementDictionary));
         }
 
-        public async Task<ResultVocab<StatementDictionary[]>> GetUserDictionaries(Guid userId, int offset = 0)
+        public async Task<ResultVocab<StatementDictionary[]>> GetUserDictionaries(Guid userId, int offset)
         {
             userId.Throw().IfDefault();
             offset.Throw().IfNegative();

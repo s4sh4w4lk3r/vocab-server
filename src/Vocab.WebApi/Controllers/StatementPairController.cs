@@ -10,35 +10,35 @@ namespace Vocab.WebApi.Controllers
     public class StatementPairController(IStatementPairService statementPairService) : ControllerBase
     {
 #warning проверить
-        [HttpPatch, Route("{id:long:min(1)}/set/source/{sourceValue:required:minlength(1)}")] 
-        public async Task<IActionResult> SetSource(long id, string sourceValue)
+        [HttpPatch, Route("{statementPairId:long:min(1)}/set/source/{sourceValue:required:minlength(1)}")] 
+        public async Task<IActionResult> SetSource(long statementPairId, string sourceValue)
         {
             Guid userGuid = this.GetUserGuid();
-            var result = await statementPairService.SetSource(userGuid, id, sourceValue);
+            var result = await statementPairService.SetSource(userGuid, statementPairId, sourceValue);
             return result.ToActionResult();
         }
 
-        [HttpPatch, Route("{id:long:min(1)}/set/target/{targetValue:required:minlength(1)}")]
-        public async Task<IActionResult> SetTarget(long id, string targetValue)
+        [HttpPatch, Route("{statementPairId:long:min(1)}/set/target/{targetValue:required:minlength(1)}")]
+        public async Task<IActionResult> SetTarget(long statementPairId, string targetValue)
         {
             Guid userGuid = this.GetUserGuid();
-            var result = await statementPairService.SetTarget(userGuid, id, targetValue);
+            var result = await statementPairService.SetTarget(userGuid, statementPairId, targetValue);
             return result.ToActionResult();
         }
 
-        [HttpPatch, Route("{id:long:min(1)}/set/category/{categoryValue}")]
-        public async Task<IActionResult> SetCategory(long id, StatementCategory categoryValue)
+        [HttpPatch, Route("{statementPairId:long:min(1)}/set/category/{categoryValue}")]
+        public async Task<IActionResult> SetCategory(long statementPairId, StatementCategory categoryValue)
         {
             Guid userGuid = this.GetUserGuid();
-            var result = await statementPairService.SetCategory(userGuid, id, categoryValue);
+            var result = await statementPairService.SetCategory(userGuid, statementPairId, categoryValue);
             return result.ToActionResult();
         }
 
-        [HttpDelete, Route("{id:long:min(1)}")]
-        public async Task<IActionResult> Delete(long id)
+        [HttpDelete, Route("{statementPairId:long:min(1)}")]
+        public async Task<IActionResult> Delete(long statementPairId)
         {
             Guid userGuid = this.GetUserGuid();
-            var result = await statementPairService.Delete(userGuid, id);
+            var result = await statementPairService.Delete(userGuid, statementPairId);
             return result.ToActionResult();
         }
 
