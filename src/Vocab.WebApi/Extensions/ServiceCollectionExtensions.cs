@@ -8,7 +8,7 @@ namespace Vocab.WebApi.Extensions
 {
     public static class ServiceCollectionExtensions
     {
-        public static void AddSwaggerVocab(this IServiceCollection services)
+        public static void AddSwaggerVocab(this IServiceCollection services, Uri openIdConnectUrl)
         {
             services.AddSwaggerGen(options =>
             {
@@ -25,7 +25,7 @@ namespace Vocab.WebApi.Extensions
                 options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
                 {
                     Type = SecuritySchemeType.OpenIdConnect,
-                    OpenIdConnectUrl = new Uri("http://localhost/auth/realms/vocab/.well-known/openid-configuration"),
+                    OpenIdConnectUrl = openIdConnectUrl,
                 });
 
                 options.AddSecurityRequirement(new OpenApiSecurityRequirement()

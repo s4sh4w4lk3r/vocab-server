@@ -53,7 +53,7 @@ namespace Vocab.WebApi
             builder.Services.AddAuthenticationVocab(kcConfiguration);
             builder.Services.AddAuthorizationVocab(kcConfiguration);
 
-            builder.Services.AddSwaggerVocab();
+            builder.Services.AddSwaggerVocab(new Uri(kcConfiguration.MetadataAddress));
 
             builder.Services.AddScoped<IRatingService, RatingService>();
             builder.Services.AddScoped<IStatementDictionaryService, StatementDictionaryService>();
