@@ -10,7 +10,7 @@ namespace Vocab.WebApi.Extensions
         {
             if (resultVocab.Success is false && resultVocab.Description == ResultMessages.NotFound)
             {
-                return new NotFoundObjectResult(resultVocab.Description);
+                return new NotFoundObjectResult(resultVocab);
             }
 
             if (resultVocab.Success is false)
