@@ -116,7 +116,8 @@ namespace Vocab.Infrastructure.Services
                 return ResultVocab.Fail(ResultMessages.NotFound).AddValue(default(StatementPair[]));
             }
 
-            StatementPair[] statementPairs = await context.StatementPairs.Where(x => x.RelatedDictionaryId == dictionaryId).Skip(offset).Take(150).ToArrayAsync();
+            StatementPair[] statementPairs = await context.StatementPairs
+                .Where(x => x.RelatedDictionaryId == dictionaryId).Skip(offset).Take(150).OrderBy(x=>x.Source).ToArrayAsync();
             return ResultVocab.Ok().AddValue(statementPairs);
         }
     }

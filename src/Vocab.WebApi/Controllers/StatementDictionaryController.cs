@@ -44,12 +44,12 @@ namespace Vocab.WebApi.Controllers
         }
 
         [HttpPost, Route("{dictionaryId:long:min(1)}/import")]
-        public async Task<IActionResult> ImportStatements([FromRoute] long dictionaryId, IFormFile statements)
+        public async Task<IActionResult> ImportStatements([FromRoute] long dictionaryId, IFormFile statements, [FromQuery] string separator = " - ")
         {
             Guid userId = this.GetUserGuid();
             using Stream stream = statements.OpenReadStream();
 
-            var result = await statementDictionaryService.ImportStatements(userId, dictionaryId, stream);
+            var result = await statementDictionaryService.ImportStatements(userId, dictionaryId, stream, separator);
             return result.ToActionResult();
         }
 

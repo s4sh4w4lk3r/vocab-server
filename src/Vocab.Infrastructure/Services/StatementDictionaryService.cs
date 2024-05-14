@@ -72,11 +72,12 @@ namespace Vocab.Infrastructure.Services
             userId.Throw().IfDefault();
             offset.Throw().IfNegative();
 
-            StatementDictionary[] statementDictionaries = await context.StatementDictionaries.Where(x => x.OwnerId == userId).Skip(offset).Take(15).ToArrayAsync();
+            StatementDictionary[] statementDictionaries = await context.StatementDictionaries
+                .Where(x => x.OwnerId == userId).Skip(offset).Take(15).OrderBy(x=>x.Name).ToArrayAsync();
             return ResultVocab.Ok().AddValue(statementDictionaries);
         }
 
-        public async Task<ResultVocab<ImportStatementsResult>> ImportStatements(Guid userId, long dictionaryId, Stream stream, string separator = " - ")
+        public async Task<ResultVocab<ImportStatementsResult>> ImportStatements(Guid userId, long dictionaryId, Stream stream, string separator)
         {
             userId.Throw().IfDefault();
             dictionaryId.Throw().IfDefault();
@@ -89,45 +90,26 @@ namespace Vocab.Infrastructure.Services
 
             using StreamReader streamReader = new(stream);
             string documentStr = await streamReader.ReadToEndAsync();
-            string[] lines = documentStr.Split('\n');
-            List<string> failedStatementPairs = [];
-            List<StatementPair> statementPairs = [];
-            StatementPairValidator validator = new(true);
 
-            Parallel.ForEach(lines, (line) =>
+            var documentParsingResult = ParseDocument(dictionaryId, documentStr, separator);
+            (ICollection<StatementPair> statementPairs, ICollection<string> failedStatementPairs) = documentParsingResult.Value;
+
+            if (documentParsingResult.Success is false || statementPairs is null || failedStatementPairs is null)
             {
-                string[] statements = line.Split(separator);
-                if (line is not [_, _])
-                {
-                    failedStatementPairs.Add(line);
-                    return;
-                }
+                return ResultVocab.Fail("Ошибка при парсинге.").AddValue(default(ImportStatementsResult)).AddInnerResult(documentParsingResult);
+            }
 
-                StatementPair statement = new()
-                {
-                    Id = default,
-                    LastModified = DateTime.UtcNow,
-                    RelatedDictionaryId = dictionaryId,
-                    Source = statements[0],
-                    Target = statements[1],
-                    StatementCategory = Core.Enums.StatementCategory.None
-                };
-
-                if (!validator.Validate(statement).IsValid)
-                {
-                    failedStatementPairs.Add(line);
-                    return;
-                }
-
-                statementPairs.Add(statement);
-            });
+            if (statementPairs.Count == 0)
+            {
+                return ResultVocab.Fail("Ни одно выражение не импортировано.").AddValue(default(ImportStatementsResult));
+            }
 
             await context.StatementPairs.AddRangeAsync(statementPairs);
 
             ResultVocab dbSaveResult = await context.TrySaveChangesAsync();
             ImportStatementsResult importResult = new(statementPairs.Count, failedStatementPairs);
 
-            return ResultVocab.Ok("Выражения импортированы").AddValue(importResult).AddInnerResult(dbSaveResult);
+            return ResultVocab.Ok("Выражения импортированы успешно.").AddValue(importResult).AddInnerResult(dbSaveResult);
         }
 
         public async Task<ResultVocab<StatementDictionary>> Insert(Guid userId, StatementDictionary dictionary)
@@ -184,5 +166,54 @@ namespace Vocab.Infrastructure.Services
             context.StatementDictionaries.Update(dictionary);
             return (await context.TrySaveChangesAsync(ResultMessages.Updated)).AddValue(dictionary);
         }
+        
+        private static ResultVocab<(ICollection<StatementPair>, ICollection<string>)> ParseDocument(long dictionaryId, string documentStr, string separator)
+        {
+            documentStr.ThrowIfNull().IfEmpty().IfWhiteSpace();
+
+            string[] lines = documentStr.Split('\n');
+
+            if (lines.Length == 0)
+            {
+                return ResultVocab.Fail("Ни одной строки не получено.").AddValue<(ICollection<StatementPair>, ICollection<string>)>(default);
+            }
+
+            ICollection<string> failedStatementPairs = [];
+            ICollection<StatementPair> statementPairs = [];
+            StatementPairValidator validator = new(true);
+
+            foreach (var line in lines)
+            {
+                string[] statements = line.Replace("\r", string.Empty).Split(separator);
+
+                if (statements is not [_, _])
+                {
+                    failedStatementPairs.Add(line);
+                    continue;
+                }
+
+                StatementPair statement = new()
+                {
+                    Id = default,
+                    LastModified = DateTime.UtcNow,
+                    RelatedDictionaryId = dictionaryId,
+                    Source = statements[0],
+                    Target = statements[1],
+                    StatementCategory = Core.Enums.StatementCategory.None
+                };
+
+                if (!validator.Validate(statement).IsValid)
+                {
+                    failedStatementPairs.Add(line);
+                    continue;
+                }
+
+                statementPairs.Add(statement);
+            }
+
+            lines.Length.Throw().IfNotEquals(failedStatementPairs.Count + statementPairs.Count);
+
+            return ResultVocab.Ok().AddValue((statementPairs, failedStatementPairs));
+        } 
     }
 }
