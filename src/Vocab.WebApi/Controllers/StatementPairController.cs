@@ -6,7 +6,7 @@ using Vocab.WebApi.Models;
 
 namespace Vocab.WebApi.Controllers
 {
-    [ApiController, Route("statement-pairs")]
+    [ApiController, Route("statements")]
     public class StatementPairController(IStatementPairService statementPairService) : ControllerBase
     {
 #warning проверить
@@ -47,6 +47,14 @@ namespace Vocab.WebApi.Controllers
         {
             Guid userGuid = this.GetUserGuid();
             var result = await statementPairService.Insert(userGuid, statementPairDto.ToEntity());
+            return result.ToActionResult();
+        }
+
+        [HttpGet, Route("{statementPairId:long:min(1)}")]
+        public async Task<IActionResult> GetById(long statementPairId)
+        {
+            Guid userGuid = this.GetUserGuid();
+            var result = await statementPairService.GetById(userGuid, statementPairId);
             return result.ToActionResult();
         }
     }

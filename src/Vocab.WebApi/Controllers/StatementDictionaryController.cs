@@ -7,7 +7,7 @@ using Vocab.WebApi.Extensions;
 namespace Vocab.WebApi.Controllers
 {
     [ApiController, Route("dictionaries")]
-    public class StatementDictionaryController(IStatementDictionaryService service) : ControllerBase
+    public class StatementDictionaryController(IStatementDictionaryService statementDictionaryService, IStatementPairService statementPairService) : ControllerBase
     {
 #warning проверить
         [HttpPost]
@@ -15,7 +15,7 @@ namespace Vocab.WebApi.Controllers
         {
             Guid userId = this.GetUserGuid();
             StatementDictionary statementDictionary = new(default, name, userId, DateTime.UtcNow);
-            var result = await service.Insert(userId, statementDictionary);
+            var result = await statementDictionaryService.Insert(userId, statementDictionary);
             return result.ToActionResult();
         }
 
@@ -23,7 +23,7 @@ namespace Vocab.WebApi.Controllers
         public async Task<IActionResult> Delete([FromRoute] long dictionaryId)
         {
             Guid userId = this.GetUserGuid();
-            var result = await service.Delete(userId, dictionaryId);
+            var result = await statementDictionaryService.Delete(userId, dictionaryId);
             return result.ToActionResult();
         }
 
@@ -31,7 +31,7 @@ namespace Vocab.WebApi.Controllers
         public async Task<IActionResult> Rename([FromRoute] long dictionaryId, [FromQuery, Required] string name)
         {
             Guid userId = this.GetUserGuid();
-            var result = await service.SetName(userId, dictionaryId, name);
+            var result = await statementDictionaryService.SetName(userId, dictionaryId, name);
             return result.ToActionResult();
         }
 
@@ -39,7 +39,7 @@ namespace Vocab.WebApi.Controllers
         public async Task<IActionResult> GetStatementsForChallenge([FromRoute] long dictionaryId, [FromQuery] int gameLength = 25)
         {
             Guid userId = this.GetUserGuid();
-            var result = await service.GetStatementsForChallenge(userId, dictionaryId, gameLength);
+            var result = await statementDictionaryService.GetStatementsForChallenge(userId, dictionaryId, gameLength);
             return result.ToActionResult();
         }
 
@@ -49,7 +49,31 @@ namespace Vocab.WebApi.Controllers
             Guid userId = this.GetUserGuid();
             using Stream stream = statements.OpenReadStream();
 
-            var result = await service.ImportStatements(userId, dictionaryId, stream);
+            var result = await statementDictionaryService.ImportStatements(userId, dictionaryId, stream);
+            return result.ToActionResult();
+        }
+
+        [HttpGet, Route("{dictionaryId:long:min(1)}")]
+        public async Task<IActionResult> GetById(long dictionaryId)
+        {
+            Guid userId = this.GetUserGuid();
+            var result = await statementDictionaryService.GetById(userId, dictionaryId);
+            return result.ToActionResult();
+        }
+
+        [HttpGet, Route("")]
+        public async Task<IActionResult> GetDictionariesArray([FromQuery] int offset = 0)
+        {
+            Guid userId = this.GetUserGuid();
+            var result = await statementDictionaryService.GetUserDictionaries(userId, offset);
+            return result.ToActionResult();
+        }
+
+        [HttpGet, Route("{dictionaryId:long:min(1)}/statements")]
+        public async Task<IActionResult> GetStatementPairsArray(long dictionaryId, [FromQuery] int offset = 0)
+        {
+            Guid userGuid = this.GetUserGuid();
+            var result = await statementPairService.GetDictionaryStatementPairs(userGuid, dictionaryId, offset);
             return result.ToActionResult();
         }
     }
