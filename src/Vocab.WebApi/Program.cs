@@ -76,6 +76,7 @@ namespace Vocab.WebApi
 
             app.UseCors(o => o.AllowAnyMethod().AllowAnyHeader().WithOrigins(origins));
 
+            app.UseWebSockets();
             app.MapControllers().RequireAuthorization();
 
             if (app.Environment.IsDevelopment())
