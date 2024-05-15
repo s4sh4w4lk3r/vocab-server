@@ -1,6 +1,8 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Throw;
 using Vocab.Application.Abstractions.Services;
+using Vocab.Application.Constants;
+using Vocab.Application.Types;
 using Vocab.Application.ValueObjects;
 using Vocab.Core.Entities;
 using Vocab.Infrastructure.Persistence;
@@ -9,7 +11,8 @@ namespace Vocab.Infrastructure.Services
 {
     public class RatingService(VocabContext vocabContext) : IRatingService
     {
-        public async Task<ResultVocab<int>> HandleAnswer(Guid userId, long statementPairId, string userGuess)
+#warning проверить
+        public async Task<ResultVocab<AnswerResult>> HandleAnswer(Guid userId, long statementPairId, string userGuess)
         {
             userId.Throw().IfDefault();
             statementPairId.Throw().IfDefault();
@@ -21,18 +24,24 @@ namespace Vocab.Infrastructure.Services
 
             if (rightTagret is null)
             {
-                return ResultVocab.Fail("Словосочетание не найдено").AddValue(default(int));
+                return ResultVocab.Fail("Словосочетание не найдено").AddValue(default(AnswerResult));
             }
 
-            if (string.Equals(userGuess, rightTagret.Target, StringComparison.InvariantCultureIgnoreCase))
+            int prevRating = rightTagret.GuessingLevel;
+
+            AnswerResult answerResult = string.Equals(userGuess, rightTagret.Target, StringComparison.InvariantCultureIgnoreCase)
+                ? new(CurrentRating: rightTagret.IncreaseRating(), IsAnswerRight: true) 
+                : new(CurrentRating: rightTagret.DecreaseRating(), IsAnswerRight: false);
+
+
+            if (prevRating != answerResult.CurrentRating)
             {
-                rightTagret.IncreaseRating();
-                return (await vocabContext.TrySaveChangesAsync()).AddValue(rightTagret.GuessingLevel);
+                var saveToDbResult = await vocabContext.TrySaveChangesAsync();
+                return ResultVocab.Ok(ResultMessages.Updated).AddInnerResult(saveToDbResult).AddValue(answerResult);
             }
             else
             {
-                rightTagret.DecreaseRating();
-                return (await vocabContext.TrySaveChangesAsync()).AddValue(rightTagret.GuessingLevel);
+                return ResultVocab.Ok(ResultMessages.Updated).AddValue(answerResult);
             }
         }
     }
