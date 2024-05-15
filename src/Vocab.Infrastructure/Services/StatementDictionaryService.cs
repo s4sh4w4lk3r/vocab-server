@@ -92,7 +92,7 @@ namespace Vocab.Infrastructure.Services
             string documentStr = await streamReader.ReadToEndAsync();
 
             var documentParsingResult = ParseDocument(dictionaryId, documentStr, separator);
-            (ICollection<StatementPair> statementPairs, ICollection<string> failedStatementPairs) = documentParsingResult.Value;
+            (List<StatementPair> statementPairs, List<string> failedStatementPairs) = documentParsingResult.Value;
 
             if (documentParsingResult.Success is false || statementPairs is null || failedStatementPairs is null)
             {
@@ -167,7 +167,7 @@ namespace Vocab.Infrastructure.Services
             return (await context.TrySaveChangesAsync(ResultMessages.Updated)).AddValue(dictionary);
         }
         
-        private static ResultVocab<(ICollection<StatementPair>, ICollection<string>)> ParseDocument(long dictionaryId, string documentStr, string separator)
+        private static ResultVocab<(List<StatementPair>, List<string>)> ParseDocument(long dictionaryId, string documentStr, string separator)
         {
             documentStr.ThrowIfNull().IfEmpty().IfWhiteSpace();
 
@@ -175,12 +175,12 @@ namespace Vocab.Infrastructure.Services
 
             if (lines.Length == 0)
             {
-                return ResultVocab.Fail("Ни одной строки не получено.").AddValue<(ICollection<StatementPair>, ICollection<string>)>(default);
+                return ResultVocab.Fail("Ни одной строки не получено.").AddValue<(List<StatementPair>, List<string>)>(default);
             }
 
-            ICollection<string> failedStatementPairs = [];
-            ICollection<StatementPair> statementPairs = [];
-            StatementPairValidator validator = new(true);
+            List<string> failedStatementPairs = [];
+            List<StatementPair> statementPairs = new (lines.Length);
+            StatementPairValidator validator = new(willBeInserted: true);
 
             foreach (var line in lines)
             {
