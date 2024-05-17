@@ -1,13 +1,12 @@
 ﻿using System;
 using Microsoft.EntityFrameworkCore.Migrations;
-using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 #nullable disable
 
 namespace Vocab.WebApi.Migrations
 {
     /// <inheritdoc />
-    public partial class Initial : Migration
+    public partial class InitialCreate : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -17,10 +16,10 @@ namespace Vocab.WebApi.Migrations
                 columns: table => new
                 {
                     Id = table.Column<long>(type: "bigint", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    Name = table.Column<string>(type: "text", nullable: false),
-                    OwnerId = table.Column<Guid>(type: "uuid", nullable: false),
-                    LastModified = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Name = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    OwnerId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    LastModified = table.Column<DateTime>(type: "datetime2", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -32,11 +31,12 @@ namespace Vocab.WebApi.Migrations
                 columns: table => new
                 {
                     Id = table.Column<long>(type: "bigint", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    Source = table.Column<string>(type: "text", nullable: false),
-                    Target = table.Column<string>(type: "text", nullable: false),
-                    StatementCategory = table.Column<int>(type: "integer", nullable: false),
-                    LastModified = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Source = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Target = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    StatementCategory = table.Column<int>(type: "int", nullable: false),
+                    GuessingLevel = table.Column<int>(type: "int", nullable: false, defaultValue: 1),
+                    LastModified = table.Column<DateTime>(type: "datetime2", nullable: false),
                     RelatedDictionaryId = table.Column<long>(type: "bigint", nullable: false)
                 },
                 constraints: table =>

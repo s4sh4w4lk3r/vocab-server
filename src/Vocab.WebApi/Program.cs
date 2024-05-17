@@ -25,18 +25,18 @@ namespace Vocab.WebApi
 
             // -------------------------------------------------------------------------------------------------------------------------- >8
 
-            IConfigurationSection postgresConfigurationSection = builder.Configuration.GetRequiredSection(nameof(PostgresConfiguration));
+            IConfigurationSection DatabaseConfigurationSection = builder.Configuration.GetRequiredSection(nameof(DatabaseConfiguration));
             IConfigurationSection kcConfigurationSection = builder.Configuration.GetRequiredSection(nameof(KeycloakConfiguration));
 
             KeycloakConfiguration kcConfiguration = kcConfigurationSection.Get<KeycloakConfiguration>() ?? throw new ArgumentNullException("Конфигурация Keycloak не получена.");
-            PostgresConfiguration postgresConfiguration = postgresConfigurationSection.Get<PostgresConfiguration>() ?? throw new ArgumentNullException("Конфигурация Postgres не получена.");
+            DatabaseConfiguration databaseConfiguration = DatabaseConfigurationSection.Get<DatabaseConfiguration>() ?? throw new ArgumentNullException("Конфигурация базы данных не получена.");
 
             builder.Services.Configure<ForwardedHeadersOptions>(options =>
             {
                 options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto | ForwardedHeaders.XForwardedHost;
             });
 
-            builder.Services.Configure<PostgresConfiguration>(postgresConfigurationSection);
+            builder.Services.Configure<DatabaseConfiguration>(DatabaseConfigurationSection);
             builder.Services.Configure<CorsConfiguration>(builder.Configuration.GetRequiredSection(nameof(CorsConfiguration)));
             builder.Services.Configure<KeycloakConfiguration>(kcConfigurationSection);
 
@@ -45,8 +45,8 @@ namespace Vocab.WebApi
             builder.Services.AddControllers();
             builder.Services.AddDbContext<VocabContext>(options =>
             {
-                options.EnableSensitiveDataLogging(sensitiveDataLoggingEnabled: postgresConfiguration.SensitiveDataLoggingEnabled);
-                options.UseNpgsql(postgresConfiguration.ConnectionString, options => options.MigrationsAssembly("Vocab.WebApi"));
+                options.EnableSensitiveDataLogging(sensitiveDataLoggingEnabled: builder.Environment.IsDevelopment());
+                options.UseSqlServer(databaseConfiguration.ConnectionString, options => options.MigrationsAssembly("Vocab.WebApi"));
             },
             contextLifetime: ServiceLifetime.Scoped, optionsLifetime: ServiceLifetime.Scoped);
 
