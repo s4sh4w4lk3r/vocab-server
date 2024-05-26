@@ -24,7 +24,7 @@ namespace Vocab.Infrastructure.Services
                     .AddValue(default(StatementPair));
             }
 
-            if (await context.StatementDictionaries.AnyAsync(sd => sd.OwnerId == userId && sd.Id == statementPair.RelatedDictionaryId))
+            if (await context.StatementDictionaries.AnyAsync(sd => sd.OwnerId == userId && sd.Id == statementPair.StatementsDictionaryId))
             {
                 return ResultVocab.Fail("userId не соответствует ownerId или указанный словарь не найден.").AddValue(default(StatementPair));
             }
@@ -66,7 +66,7 @@ namespace Vocab.Infrastructure.Services
             userId.Throw().IfDefault();
             statementPair.ThrowIfNull();
 
-            if (!await context.StatementDictionaries.AnyAsync(sd=>sd.OwnerId == userId && sd.Id == statementPair.RelatedDictionaryId))
+            if (!await context.StatementDictionaries.AnyAsync(sd=>sd.OwnerId == userId && sd.Id == statementPair.StatementsDictionaryId))
             {
                 return ResultVocab.Fail("userId не соответствует ownerId или указанный словарь не найден.").AddValue(default(StatementPair));
             }
@@ -117,7 +117,7 @@ namespace Vocab.Infrastructure.Services
             }
 
             StatementPair[] statementPairs = await context.StatementPairs
-                .Where(x => x.RelatedDictionaryId == dictionaryId).Skip(offset).Take(150).OrderBy(x=>x.Source).ToArrayAsync();
+                .Where(x => x.StatementsDictionaryId == dictionaryId).Skip(offset).Take(150).OrderBy(x=>x.Source).ToArrayAsync();
             return ResultVocab.Ok().AddValue(statementPairs);
         }
     }

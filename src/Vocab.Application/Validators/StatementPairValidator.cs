@@ -9,7 +9,7 @@ namespace Vocab.Application.Validators
         {
             _ = willBeInserted ? RuleFor(sp => sp.Id).Empty() : RuleFor(sp => sp.Id).NotEmpty();
 
-            RuleFor(sp => sp.RelatedDictionaryId).NotEmpty();
+            RuleFor(sp => sp.StatementsDictionaryId).NotEmpty();
             RuleFor(sp => sp.Source).NotEmpty();
             RuleFor(sp => sp.Target).NotEmpty();
             RuleFor(sp => sp.StatementCategory).IsInEnum();

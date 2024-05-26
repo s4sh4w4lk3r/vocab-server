@@ -196,7 +196,7 @@ namespace Vocab.Infrastructure.Services
                 {
                     Id = default,
                     LastModified = DateTime.UtcNow,
-                    RelatedDictionaryId = dictionaryId,
+                    StatementsDictionaryId = dictionaryId,
                     Source = statements[0],
                     Target = statements[1],
                     StatementCategory = Core.Enums.StatementCategory.None

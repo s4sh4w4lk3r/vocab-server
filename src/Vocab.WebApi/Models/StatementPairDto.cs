@@ -18,7 +18,7 @@ namespace Vocab.WebApi.Models
                 Source = Source,
                 Target = Target,
                 StatementCategory = StatementCategory,
-                RelatedDictionaryId = RelatedDictionaryId,
+                StatementsDictionaryId = RelatedDictionaryId,
                 LastModified = DateTime.UtcNow,
             };
         }
