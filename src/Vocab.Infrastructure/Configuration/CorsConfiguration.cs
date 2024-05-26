@@ -1,4 +1,7 @@
 ﻿namespace Vocab.Infrastructure.Configuration
 {
-    public record class CorsConfiguration(string[] Origins);
+    public class CorsConfiguration()
+    {
+        public string[]? Origins { get; init; }
+    }
 }

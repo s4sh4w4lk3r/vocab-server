@@ -7,7 +7,7 @@ using Vocab.Core.Entities;
 
 namespace Vocab.WebApi.Extensions
 {
-    public static class ControllerExtensions
+    internal static class ControllerExtensions
     {
         public static User GetUserProfile(this ControllerBase controller)
         {

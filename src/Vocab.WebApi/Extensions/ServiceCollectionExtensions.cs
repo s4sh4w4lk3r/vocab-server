@@ -1,12 +1,9 @@
-﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.IdentityModel.Tokens;
-using Microsoft.OpenApi.Models;
+﻿using Microsoft.OpenApi.Models;
 using System.Reflection;
-using Vocab.Infrastructure.Configuration;
 
 namespace Vocab.WebApi.Extensions
 {
-    public static class ServiceCollectionExtensions
+    internal static class ServiceCollectionExtensions
     {
         public static void AddSwaggerVocab(this IServiceCollection services, Uri openIdConnectUrl)
         {
@@ -43,36 +40,6 @@ namespace Vocab.WebApi.Extensions
                     }
                 });
             });
-        }
-        public static void AddAuthenticationVocab(this IServiceCollection services, KeycloakConfiguration keycloakConfiguration)
-        {
-            TokenValidationParameters validationParameters = new()
-            {
-                ClockSkew = TimeSpan.FromMinutes(5),
-                ValidateAudience = true,
-                ValidateIssuer = true,
-                NameClaimType = "preferred_username",
-                //RoleClaimType = "role",
-                ValidIssuers = keycloakConfiguration.ValidIssuers,
-                ValidAudiences = ["account", "realm-management"]
-            };
-
-            services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-            .AddJwtBearer(opts =>
-               {
-                   opts.Audience = "aspnet";
-                   opts.TokenValidationParameters = validationParameters;
-                   opts.RequireHttpsMetadata = false;
-                   opts.SaveToken = true;
-                   opts.MetadataAddress = keycloakConfiguration.MetadataAddress;
-               });
-
-
-        }
-        public static void AddAuthorizationVocab(this IServiceCollection services, KeycloakConfiguration keycloakConfiguration)
-        {
-
-
         }
     }
 }

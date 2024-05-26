@@ -1,4 +1,7 @@
 ﻿namespace Vocab.Infrastructure.Configuration
 {
-    public record class DatabaseConfiguration(string ConnectionString);
+    public class DatabaseConfiguration()
+    {
+        public string? ConnectionString { get; init; }
+    }
 }

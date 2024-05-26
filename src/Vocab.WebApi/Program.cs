@@ -1,3 +1,4 @@
+using Keycloak.AuthServices.Authentication;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
@@ -26,10 +27,8 @@ namespace Vocab.WebApi
             // -------------------------------------------------------------------------------------------------------------------------- >8
 
             IConfigurationSection DatabaseConfigurationSection = builder.Configuration.GetRequiredSection(nameof(DatabaseConfiguration));
-            IConfigurationSection kcConfigurationSection = builder.Configuration.GetRequiredSection(nameof(KeycloakConfiguration));
 
-            KeycloakConfiguration kcConfiguration = kcConfigurationSection.Get<KeycloakConfiguration>() ?? throw new ArgumentNullException("Конфигурация Keycloak не получена.");
-            DatabaseConfiguration databaseConfiguration = DatabaseConfigurationSection.Get<DatabaseConfiguration>() ?? throw new ArgumentNullException("Конфигурация базы данных не получена.");
+            DatabaseConfiguration databaseConfiguration = DatabaseConfigurationSection.Get<DatabaseConfiguration>() ?? throw new ArgumentNullException("РљРѕРЅС„РёРіСѓСЂР°С†РёСЏ Р±Р°Р·С‹ РґР°РЅРЅС‹С… РЅРµ РїРѕР»СѓС‡РµРЅР°.");
 
             builder.Services.Configure<ForwardedHeadersOptions>(options =>
             {
@@ -38,7 +37,6 @@ namespace Vocab.WebApi
 
             builder.Services.Configure<DatabaseConfiguration>(DatabaseConfigurationSection);
             builder.Services.Configure<CorsConfiguration>(builder.Configuration.GetRequiredSection(nameof(CorsConfiguration)));
-            builder.Services.Configure<KeycloakConfiguration>(kcConfigurationSection);
 
             // -------------------------------------------------------------------------------------------------------------------------- >8
 
@@ -50,8 +48,8 @@ namespace Vocab.WebApi
             },
             contextLifetime: ServiceLifetime.Scoped, optionsLifetime: ServiceLifetime.Scoped);
 
-            builder.Services.AddAuthenticationVocab(kcConfiguration);
-            builder.Services.AddAuthorizationVocab(kcConfiguration);
+            builder.Services.AddKeycloakWebApiAuthentication(builder.Configuration);
+            builder.Services.AddAuthorization();
 
             builder.Services.AddSwaggerVocab(new Uri(kcConfiguration.MetadataAddress));
 
@@ -88,11 +86,11 @@ namespace Vocab.WebApi
 
             // -------------------------------------------------------------------------------------------------------------------------- >8
 
-            db.Database.CanConnect().Throw(_ => new InvalidOperationException("Не получилось подключиться к базе данных.")).IfFalse();
+            db.Database.CanConnect().Throw(_ => new InvalidOperationException("пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ.")).IfFalse();
             using (HttpClient httpClient = new())
             {
                 Uri uri = new(kcConfiguration.MetadataAddress);
-                string kcExceptionMessage = "Не получилось подключиться к серверу аутентификации.";
+                string kcExceptionMessage = "пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ.";
                 try
                 {
                     bool isSuccess = (await httpClient.GetAsync(uri)).IsSuccessStatusCode;

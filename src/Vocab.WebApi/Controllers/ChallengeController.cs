@@ -69,6 +69,7 @@ namespace Vocab.WebApi.Controllers
                 }
                 else
                 {
+#warning залогить это.
                     await webSocket.CloseAsync(WebSocketCloseStatus.InternalServerError, "Произошла ошибка на сервере.", CancellationToken.None);
                 }
             }

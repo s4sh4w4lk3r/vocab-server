@@ -4,7 +4,7 @@ using Vocab.Application.ValueObjects;
 
 namespace Vocab.WebApi.Extensions
 {
-    public static class VocabResultExtensions
+    internal static class VocabResultExtensions
     {
         public static IActionResult ToActionResult(this ResultVocab resultVocab)
         {
