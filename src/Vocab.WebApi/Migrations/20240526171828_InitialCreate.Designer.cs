@@ -12,7 +12,7 @@ using Vocab.Infrastructure.Persistence;
 namespace Vocab.WebApi.Migrations
 {
     [DbContext(typeof(VocabContext))]
-    [Migration("20240517114422_InitialCreate")]
+    [Migration("20240526171828_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -38,7 +38,8 @@ namespace Vocab.WebApi.Migrations
 
                     b.Property<string>("Name")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)");
 
                     b.Property<Guid>("OwnerId")
                         .HasColumnType("uniqueidentifier");
@@ -64,23 +65,25 @@ namespace Vocab.WebApi.Migrations
                     b.Property<DateTime>("LastModified")
                         .HasColumnType("datetime2");
 
-                    b.Property<long>("RelatedDictionaryId")
-                        .HasColumnType("bigint");
-
                     b.Property<string>("Source")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(512)
+                        .HasColumnType("nvarchar(512)");
 
                     b.Property<int>("StatementCategory")
                         .HasColumnType("int");
 
+                    b.Property<long>("StatementsDictionaryId")
+                        .HasColumnType("bigint");
+
                     b.Property<string>("Target")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(512)
+                        .HasColumnType("nvarchar(512)");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("RelatedDictionaryId");
+                    b.HasIndex("StatementsDictionaryId");
 
                     b.ToTable("StatementPairs");
                 });
@@ -89,7 +92,7 @@ namespace Vocab.WebApi.Migrations
                 {
                     b.HasOne("Vocab.Core.Entities.StatementDictionary", "StatementsDictionary")
                         .WithMany("StatementPairs")
-                        .HasForeignKey("RelatedDictionaryId")
+                        .HasForeignKey("StatementsDictionaryId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
