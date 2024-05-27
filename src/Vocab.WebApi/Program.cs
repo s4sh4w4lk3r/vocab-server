@@ -86,11 +86,10 @@ namespace Vocab.WebApi
 
             // -------------------------------------------------------------------------------------------------------------------------- >8
 
-            db.Database.CanConnect().Throw(_ => new InvalidOperationException("�� ���������� ������������ � ���� ������.")).IfFalse();
+            db.Database.CanConnect().Throw(_ => new InvalidOperationException("Не получилось подключиться к базе данных.")).IfFalse();
             using (HttpClient httpClient = new())
             {
-                Uri uri = new(kcConfiguration.MetadataAddress);
-                string kcExceptionMessage = "�� ���������� ������������ � ������� ��������������.";
+                string kcExceptionMessage = "Не получилось подключиться к серверу аутентификации.";
                 try
                 {
                     bool isSuccess = (await httpClient.GetAsync(uri)).IsSuccessStatusCode;
