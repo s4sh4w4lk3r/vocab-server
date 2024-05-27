@@ -26,10 +26,6 @@ namespace Vocab.WebApi
 
             // -------------------------------------------------------------------------------------------------------------------------- >8
 
-            IConfigurationSection DatabaseConfigurationSection = builder.Configuration.GetRequiredSection(nameof(DatabaseConfiguration));
-
-            DatabaseConfiguration databaseConfiguration = DatabaseConfigurationSection.Get<DatabaseConfiguration>() ?? throw new ArgumentNullException("Конфигурация базы данных не получена.");
-
             builder.Services.Configure<ForwardedHeadersOptions>(options =>
             {
                 options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto | ForwardedHeaders.XForwardedHost;
@@ -43,8 +39,11 @@ namespace Vocab.WebApi
             builder.Services.AddControllers();
             builder.Services.AddDbContext<VocabContext>(options =>
             {
+                string connString = builder.Configuration.GetConnectionString("SqlServer")
+                .ThrowIfNull().IfEmpty().IfWhiteSpace().Value;
+
                 options.EnableSensitiveDataLogging(sensitiveDataLoggingEnabled: builder.Environment.IsDevelopment());
-                options.UseSqlServer(databaseConfiguration.ConnectionString, options => options.MigrationsAssembly("Vocab.WebApi"));
+                options.UseSqlServer(connString, options => options.MigrationsAssembly("Vocab.WebApi"));
             },
             contextLifetime: ServiceLifetime.Scoped, optionsLifetime: ServiceLifetime.Scoped);
 
@@ -65,7 +64,7 @@ namespace Vocab.WebApi
 
             using var scope = app.Services.CreateScope();
             var db = scope.ServiceProvider.GetRequiredService<VocabContext>();
-            var origins = scope.ServiceProvider.GetRequiredService<IOptions<CorsConfiguration>>().Value.Origins;
+            var origins = scope.ServiceProvider.GetRequiredService<IOptions<CorsConfiguration>>().Value.Origins ?? throw new NullReferenceException("Конфигурация CORS не получена.");
 
             app.UseForwardedHeaders();
 
