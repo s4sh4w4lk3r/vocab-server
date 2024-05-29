@@ -5,20 +5,17 @@ using System.Text.Encodings.Web;
 using System.Text.Json;
 using Vocab.Application.Abstractions.Services;
 using Vocab.Application.Types;
+using Vocab.Infrastructure.Services;
 using Vocab.WebApi.Extensions;
 
 namespace Vocab.WebApi.Controllers
 {
-#error отрефакторить
-#error добавить токены отмены
-#error разнести логику
     [ApiController, Route("ws")]
-    public class ChallengeController(IStatementDictionaryService statementDictionaryService, IRatingService ratingService) : ControllerBase
+    public class ChallengeController(IRatingService ratingService, ChallengeService challengeService) : ControllerBase
     {
         private static readonly JsonSerializerOptions jsonSerializerOptions = new()
         {
             Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
-            WriteIndented = true
         };
 
         [Route("challenge/{dictionaryId}")]
@@ -32,18 +29,17 @@ namespace Vocab.WebApi.Controllers
 
             Guid userId = this.GetUserGuid();
 
-            var getGameResult = await statementDictionaryService.GetStatementsForChallenge(userId, dictionaryId, gameLength);
-            if (getGameResult.Success is false || getGameResult.Value is not { Length: >= 5 })
+            var initGameResult = await challengeService.InitGame(userId, dictionaryId, gameLength);
+            if (initGameResult.Success is false)
             {
+#warning попробовать донести до юзера что пошло не так тут. Может запихнуть сообщение в body
                 HttpContext.Response.StatusCode = StatusCodes.Status400BadRequest;
                 return;
             }
 
-            Queue<ChallengeStatementsPair> statementsPairsQueue = new(getGameResult.Value);
-
-
             using var webSocket = await HttpContext.WebSockets.AcceptWebSocketAsync();
-            await Echo(webSocket, statementsPairsQueue, userId);
+
+            await challengeService.StartWebSocketHandling(webSocket); /*await Echo(webSocket, statementsPairsQueue, userId);*/
         }
 
         private async Task Echo(WebSocket webSocket, Queue<ChallengeStatementsPair> statementsPairsQueue, Guid userId)
@@ -82,10 +78,10 @@ namespace Vocab.WebApi.Controllers
             byte[] responseBuffer = JsonSerializer.SerializeToUtf8Bytes(challengeStatementsPair, jsonSerializerOptions);
 
             await webSocket.SendAsync(
-               new ArraySegment<byte>(responseBuffer, 0, responseBuffer.Length),
-               WebSocketMessageType.Text,
-               true,
-               CancellationToken.None);
+               buffer: new ArraySegment<byte>(responseBuffer, 0, responseBuffer.Length),
+               messageType: WebSocketMessageType.Text,
+               endOfMessage: true,
+               cancellationToken: default);
         }
 
         private static async Task SendResult(WebSocket webSocket, AnswerResult answerResult)
@@ -93,10 +89,10 @@ namespace Vocab.WebApi.Controllers
             byte[] responseBuffer = JsonSerializer.SerializeToUtf8Bytes(answerResult, jsonSerializerOptions);
 
             await webSocket.SendAsync(
-               new ArraySegment<byte>(responseBuffer, 0, responseBuffer.Length),
-               WebSocketMessageType.Text,
-               true,
-               CancellationToken.None);
+               buffer: new ArraySegment<byte>(responseBuffer, 0, responseBuffer.Length),
+               messageType: WebSocketMessageType.Text,
+               endOfMessage: true,
+               cancellationToken: default);
         }
     }
 }
