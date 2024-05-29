@@ -1,4 +1,4 @@
-using Keycloak.AuthServices.Authentication;
+﻿using Keycloak.AuthServices.Authentication;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
@@ -16,7 +16,14 @@ namespace Vocab.WebApi
     {
         public static async Task Main(string[] args)
         {
+            #region App Builder
+
             var builder = WebApplication.CreateBuilder(args);
+            var services = builder.Services;
+            var configuration = builder.Configuration;
+
+#warning убрать из сурса ссылку
+            Uri kcUri = new("http://auth.vocab.rlx/realms/vocab/.well-known/openid-configuration");
 
             // -------------------------------------------------------------------------------------------------------------------------- >8
 
@@ -26,20 +33,19 @@ namespace Vocab.WebApi
 
             // -------------------------------------------------------------------------------------------------------------------------- >8
 
-            builder.Services.Configure<ForwardedHeadersOptions>(options =>
+            services.Configure<ForwardedHeadersOptions>(options =>
             {
                 options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto | ForwardedHeaders.XForwardedHost;
             });
 
-            builder.Services.Configure<DatabaseConfiguration>(DatabaseConfigurationSection);
-            builder.Services.Configure<CorsConfiguration>(builder.Configuration.GetRequiredSection(nameof(CorsConfiguration)));
+            services.Configure<CorsConfiguration>(configuration.GetRequiredSection(nameof(CorsConfiguration)));
 
             // -------------------------------------------------------------------------------------------------------------------------- >8
 
-            builder.Services.AddControllers();
-            builder.Services.AddDbContext<VocabContext>(options =>
+            services.AddControllers();
+            services.AddDbContext<VocabContext>(options =>
             {
-                string connString = builder.Configuration.GetConnectionString("SqlServer")
+                string connString = configuration.GetConnectionString("SqlServer")
                 .ThrowIfNull().IfEmpty().IfWhiteSpace().Value;
 
                 options.EnableSensitiveDataLogging(sensitiveDataLoggingEnabled: builder.Environment.IsDevelopment());
@@ -47,20 +53,20 @@ namespace Vocab.WebApi
             },
             contextLifetime: ServiceLifetime.Scoped, optionsLifetime: ServiceLifetime.Scoped);
 
-            builder.Services.AddKeycloakWebApiAuthentication(builder.Configuration);
-            builder.Services.AddAuthorization();
+            services.AddKeycloakWebApiAuthentication(configuration);
+            services.AddAuthorization();
 
-            builder.Services.AddSwaggerVocab(new Uri(kcConfiguration.MetadataAddress));
+            services.AddSwaggerVocab(kcUri);
 
-            builder.Services.AddScoped<IRatingService, RatingService>();
-            builder.Services.AddScoped<IStatementDictionaryService, StatementDictionaryService>();
-            builder.Services.AddScoped<IStatementPairService, StatementPairService>();
+            services.AddScoped<IRatingService, RatingService>();
+            services.AddScoped<IStatementDictionaryService, StatementDictionaryService>();
+            services.AddScoped<IStatementPairService, StatementPairService>();
 
+            #endregion
             // -------------------------------------------------------------------------------------------------------------------------- >8
+            #region App
 
             var app = builder.Build();
-
-            // -------------------------------------------------------------------------------------------------------------------------- >8
 
             using var scope = app.Services.CreateScope();
             var db = scope.ServiceProvider.GetRequiredService<VocabContext>();
@@ -91,7 +97,7 @@ namespace Vocab.WebApi
                 string kcExceptionMessage = "Не получилось подключиться к серверу аутентификации.";
                 try
                 {
-                    bool isSuccess = (await httpClient.GetAsync(uri)).IsSuccessStatusCode;
+                    bool isSuccess = (await httpClient.GetAsync(kcUri)).IsSuccessStatusCode;
                     isSuccess.Throw(_ => new InvalidOperationException(kcExceptionMessage)).IfFalse();
                 }
                 catch (HttpRequestException ex)
@@ -102,7 +108,8 @@ namespace Vocab.WebApi
             }
 
             // -------------------------------------------------------------------------------------------------------------------------- >8
-            app.Run();
+            app.Run(); 
+            #endregion
         }
     }
 }
