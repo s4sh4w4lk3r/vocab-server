@@ -13,7 +13,6 @@ namespace Vocab.Application.Abstractions.Services
         public Task<ResultVocab<StatementDictionary[]>> GetUserDictionaries(Guid userId, int offset);
 
         public Task<ResultVocab> SetName(Guid userId, long dictionaryId, string name);
-        public Task<ResultVocab<ChallengeStatementsPair[]>> GetStatementsForChallenge(Guid userId, long dictionaryId, int gameLength);
         public Task<ResultVocab<ImportStatementsResult>> ImportStatements(Guid userId, long dictionaryId, Stream stream, string separator);
     }   
 }

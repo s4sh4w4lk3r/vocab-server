@@ -35,14 +35,6 @@ namespace Vocab.WebApi.Controllers
             return result.ToActionResult();
         }
 
-        [HttpGet, Route("{dictionaryId:long:min(1)}/challenge")]
-        public async Task<IActionResult> GetStatementsForChallenge([FromRoute] long dictionaryId, [FromQuery] int gameLength = 25)
-        {
-            Guid userId = this.GetUserGuid();
-            var result = await statementDictionaryService.GetStatementsForChallenge(userId, dictionaryId, gameLength);
-            return result.ToActionResult();
-        }
-
         [HttpPost, Route("{dictionaryId:long:min(1)}/import")]
         public async Task<IActionResult> ImportStatements([FromRoute] long dictionaryId, IFormFile statements, [FromQuery] string separator = " - ")
         {

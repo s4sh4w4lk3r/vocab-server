@@ -1,17 +1,13 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using System.Net.WebSockets;
-using System.Text;
 using System.Text.Encodings.Web;
 using System.Text.Json;
-using Vocab.Application.Abstractions.Services;
-using Vocab.Application.Types;
 using Vocab.Infrastructure.Services;
 using Vocab.WebApi.Extensions;
 
 namespace Vocab.WebApi.Controllers
 {
     [ApiController, Route("ws")]
-    public class ChallengeController(IRatingService ratingService, ChallengeService challengeService) : ControllerBase
+    public class ChallengeController(ChallengeService challengeService) : ControllerBase
     {
         private static readonly JsonSerializerOptions jsonSerializerOptions = new()
         {
