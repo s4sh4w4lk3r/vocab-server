@@ -86,11 +86,6 @@ namespace Vocab.Infrastructure.Services
                 return ResultVocab.Fail(valResult.ToString()).AddValue(default(StatementDictionary));
             }
 
-            if (userId != dictionary.OwnerId)
-            {
-                return ResultVocab.Fail("userId не соответствует ownerId.").AddValue(default(StatementDictionary));
-            }
-
             await context.StatementDictionaries.AddAsync(dictionary);
             return (await context.TrySaveChangesAsync(ResultMessages.Added)).AddValue(dictionary);
         }

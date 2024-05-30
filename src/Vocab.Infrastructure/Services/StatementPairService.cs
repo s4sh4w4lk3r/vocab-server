@@ -110,6 +110,8 @@ namespace Vocab.Infrastructure.Services
             dictionaryId.Throw().IfDefault();
             offset.Throw().IfNegative();
 
+            const int STATEMENT_PAIRS_LIMIT = 100;
+
             bool isDictionaryExists = await context.StatementDictionaries.AnyAsync(x => x.Id == dictionaryId && x.OwnerId == userId);
             if (isDictionaryExists is false)
             {
@@ -117,7 +119,7 @@ namespace Vocab.Infrastructure.Services
             }
 
             StatementPair[] statementPairs = await context.StatementPairs
-                .Where(x => x.StatementsDictionaryId == dictionaryId).Skip(offset).Take(150).OrderBy(x=>x.Source).ToArrayAsync();
+                .Where(x => x.StatementsDictionaryId == dictionaryId).Skip(offset).Take(STATEMENT_PAIRS_LIMIT).OrderBy(x=>x.Source).ToArrayAsync();
             return ResultVocab.Ok().AddValue(statementPairs);
         }
     }
