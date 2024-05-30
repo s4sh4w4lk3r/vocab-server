@@ -61,6 +61,7 @@ namespace Vocab.WebApi
             services.AddScoped<IRatingService, RatingService>();
             services.AddScoped<IStatementDictionaryService, StatementDictionaryService>();
             services.AddScoped<IStatementPairService, StatementPairService>();
+            services.AddScoped<IChallengeService, ChallengeService>();
 
             #endregion
             // -------------------------------------------------------------------------------------------------------------------------- >8
@@ -113,4 +114,5 @@ namespace Vocab.WebApi
         }
     }
 }
+#warning почекать verify-token-audience
 // https://github.com/edinSahbaz/clean-api-template?tab=readme-ov-file
