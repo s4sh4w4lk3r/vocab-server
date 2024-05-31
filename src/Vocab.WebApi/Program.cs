@@ -1,5 +1,6 @@
 ﻿using Keycloak.AuthServices.Authentication;
 using Microsoft.AspNetCore.HttpOverrides;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Serilog;
@@ -9,6 +10,8 @@ using Vocab.Infrastructure.Configuration;
 using Vocab.Infrastructure.Persistence;
 using Vocab.Infrastructure.Services;
 using Vocab.WebApi.Extensions;
+
+[assembly: ApiController]
 
 namespace Vocab.WebApi
 {

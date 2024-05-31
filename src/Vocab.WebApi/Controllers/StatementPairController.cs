@@ -6,7 +6,7 @@ using Vocab.WebApi.Models;
 
 namespace Vocab.WebApi.Controllers
 {
-    [ApiController, Route("statements")]
+    [Route("statements")]
     public class StatementPairController(IStatementPairService statementPairService) : ControllerBase
     {
 #warning проверить
@@ -57,5 +57,6 @@ namespace Vocab.WebApi.Controllers
             var result = await statementPairService.GetById(userGuid, statementPairId);
             return result.ToActionResult();
         }
+
     }
 }

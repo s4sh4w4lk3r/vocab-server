@@ -1,19 +1,13 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using System.ComponentModel.DataAnnotations;
-using System.Text.Encodings.Web;
-using System.Text.Json;
 using Vocab.Application.Abstractions.Services;
 using Vocab.WebApi.Extensions;
 
 namespace Vocab.WebApi.Controllers
 {
-    [ApiController, Route("ws")]
+    [Route("ws")]
     public class ChallengeController(IChallengeService challengeService) : ControllerBase
     {
-        private static readonly JsonSerializerOptions jsonSerializerOptions = new()
-        {
-            Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
-        };
 
         [Route("challenge/{dictionaryId}")]
         public async Task StartChallenge([FromRoute] long dictionaryId, [FromQuery, Range(25, 50)] int gameLength = 25)

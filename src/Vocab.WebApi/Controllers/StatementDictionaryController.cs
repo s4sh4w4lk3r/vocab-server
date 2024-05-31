@@ -6,7 +6,7 @@ using Vocab.WebApi.Extensions;
 
 namespace Vocab.WebApi.Controllers
 {
-    [ApiController, Route("dictionaries")]
+    [Route("dictionaries")]
     public class StatementDictionaryController(IStatementDictionaryService statementDictionaryService, IStatementPairService statementPairService) : ControllerBase
     {
 #warning проверить
