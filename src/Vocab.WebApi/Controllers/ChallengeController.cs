@@ -1,13 +1,14 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using System.ComponentModel.DataAnnotations;
 using System.Text.Encodings.Web;
 using System.Text.Json;
-using Vocab.Infrastructure.Services;
+using Vocab.Application.Abstractions.Services;
 using Vocab.WebApi.Extensions;
 
 namespace Vocab.WebApi.Controllers
 {
     [ApiController, Route("ws")]
-    public class ChallengeController(ChallengeService challengeService) : ControllerBase
+    public class ChallengeController(IChallengeService challengeService) : ControllerBase
     {
         private static readonly JsonSerializerOptions jsonSerializerOptions = new()
         {
@@ -15,11 +16,13 @@ namespace Vocab.WebApi.Controllers
         };
 
         [Route("challenge/{dictionaryId}")]
-        public async Task StartChallenge([FromRoute] long dictionaryId, [FromQuery] int gameLength = 25)
+        public async Task StartChallenge([FromRoute] long dictionaryId, [FromQuery, Range(25, 50)] int gameLength = 25)
         {
+            var response = HttpContext.Response;
+
             if (HttpContext.WebSockets.IsWebSocketRequest is false)
             {
-                HttpContext.Response.StatusCode = StatusCodes.Status400BadRequest;
+                response.StatusCode = StatusCodes.Status400BadRequest;
                 return;
             }
 
@@ -28,14 +31,18 @@ namespace Vocab.WebApi.Controllers
             var initGameResult = await challengeService.InitGame(userId, dictionaryId, gameLength);
             if (initGameResult.Success is false)
             {
-#warning попробовать донести до юзера что пошло не так тут. Может запихнуть сообщение в body
-                HttpContext.Response.StatusCode = StatusCodes.Status400BadRequest;
+                response.StatusCode = StatusCodes.Status400BadRequest;
                 return;
             }
 
             using var webSocket = await HttpContext.WebSockets.AcceptWebSocketAsync();
 
-            await challengeService.StartWebSocketHandling(webSocket);
+            var webSocketHandlingResult = await challengeService.StartWebSocketHandling(webSocket);
+            if (webSocketHandlingResult.Success is false)
+            {
+                response.StatusCode = StatusCodes.Status400BadRequest;
+                return;
+            }
         }
 
     }

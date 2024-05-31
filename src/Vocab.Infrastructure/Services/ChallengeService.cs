@@ -19,9 +19,12 @@ namespace Vocab.Infrastructure.Services
             Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
         };
 
-        const int MIN_WORDS_REQUIRED = 5;
-        const int MAX_WORDS_REQUIRED = 150;
-        const int MAX_ATTEMPTS_TO_PICK_TARGET = 5;
+        private const int MIN_WORDS_REQUIRED = 5;
+        private const int MAX_WORDS_REQUIRED = 150;
+        private const int MAX_ATTEMPTS_TO_PICK_TARGET = 5;
+        private const int WEBSOCKET_BUFFER_SIZE_KB = 4;
+
+        private static readonly TimeSpan webSocketTimeout = TimeSpan.FromSeconds(10);
 
         private Queue<ChallengeStatementsPair> statementsPairsQueue = [];
         private Guid userId;
@@ -31,7 +34,7 @@ namespace Vocab.Infrastructure.Services
             this.userId = userId.Throw().IfDefault().Value;
 
             var getGameResult = await GetStatementsForChallenge(userId, dictionaryId, gameLength);
-            if (getGameResult.Success is false || getGameResult.Value is not { Length: >= 5 })
+            if (getGameResult.Success is false || getGameResult.Value is not { Length: >= MIN_WORDS_REQUIRED })
             {
                 return ResultVocab.Fail("Выражения для игры не получены.").AddInnerResult(getGameResult);
             }
@@ -41,24 +44,31 @@ namespace Vocab.Infrastructure.Services
             return ResultVocab.Ok();
         }
 
-        public async Task StartWebSocketHandling(WebSocket webSocket)
+        public async Task<ResultVocab> StartWebSocketHandling(WebSocket webSocket)
         {
             webSocket.ThrowIfNull();
             statementsPairsQueue.Throw(_ => new InvalidOperationException(
                 $"Коллекция \"statementsPairsQueue\" пустая. Возможно не был вызван метод {nameof(ChallengeService)}.{nameof(InitGame)}."))
                 .IfEmpty();
 
-            var buffer = new byte[1024 * 4];
+            var buffer = new byte[1024 * WEBSOCKET_BUFFER_SIZE_KB];
 
             while (statementsPairsQueue.TryDequeue(out ChallengeStatementsPair? challengeStatementsPair))
             {
                 await SendStatement(webSocket, challengeStatementsPair);
-#warning сделать разрыв соединения по времени неактивности
+                CancellationTokenSource cts = new(webSocketTimeout);
 
-                var receiveResult = await webSocket.ReceiveAsync(new ArraySegment<byte>(buffer), CancellationToken.None);
-                if (receiveResult.CloseStatus.HasValue)
+                try
                 {
-                    break;
+                    var receiveResult = await webSocket.ReceiveAsync(new ArraySegment<byte>(buffer), cts.Token);
+                    if (receiveResult.CloseStatus.HasValue)
+                    {
+                        break;
+                    }
+                }
+                catch (OperationCanceledException)
+                {
+                    return ResultVocab.Fail("Время ожидания ответа вышло.");
                 }
 
                 string message = Encoding.UTF8.GetString(buffer, 0, buffer.Length).TrimEnd('\0');
@@ -70,12 +80,13 @@ namespace Vocab.Infrastructure.Services
                 }
                 else
                 {
-#warning залогить это.
                     await webSocket.CloseAsync(WebSocketCloseStatus.InternalServerError, "Произошла ошибка на сервере.", CancellationToken.None);
+                    throw new InvalidOperationException(result.Description);
                 }
             }
 
             await webSocket.CloseAsync(WebSocketCloseStatus.NormalClosure, string.Empty, CancellationToken.None);
+            return ResultVocab.Ok();
         }
 
         private static async Task SendStatement(WebSocket webSocket, ChallengeStatementsPair? challengeStatementsPair)
@@ -137,6 +148,7 @@ namespace Vocab.Infrastructure.Services
 
                     if (maybeTarget.Id != x.Id)
                     {
+                        randomTarget = maybeTarget.Target;
                         break;
                     }
                 }
