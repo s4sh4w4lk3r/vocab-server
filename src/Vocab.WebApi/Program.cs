@@ -25,9 +25,6 @@ namespace Vocab.WebApi
             var services = builder.Services;
             var configuration = builder.Configuration;
 
-#warning убрать из сурса ссылку
-            Uri kcUri = new("http://auth.vocab.rlx/realms/vocab/.well-known/openid-configuration");
-
             // -------------------------------------------------------------------------------------------------------------------------- >8
 
             builder.Host.UseSerilog((ctx, lc) => lc.WriteTo.Console()
@@ -58,6 +55,10 @@ namespace Vocab.WebApi
 
             services.AddKeycloakWebApiAuthentication(configuration);
             services.AddAuthorization();
+
+            string kcServerUrl = configuration.GetRequiredSection("Keycloak:auth-server-url").Value.ThrowIfNull().IfEmpty().IfWhiteSpace().Value;
+            string realm = configuration.GetRequiredSection("Keycloak:realm").Value.ThrowIfNull().IfEmpty().IfWhiteSpace().Value;
+            Uri kcUri = new($"{kcServerUrl}realms/{realm}");
 
             services.AddSwaggerVocab(kcUri);
 
