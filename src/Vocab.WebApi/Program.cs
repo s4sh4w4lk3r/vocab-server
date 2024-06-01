@@ -27,9 +27,13 @@ namespace Vocab.WebApi
 
             // -------------------------------------------------------------------------------------------------------------------------- >8
 
-            builder.Host.UseSerilog((ctx, lc) => lc.WriteTo.Console()
-            .WriteTo.File($"./logs/log.log", rollingInterval: RollingInterval.Day)
-            .ReadFrom.Configuration(ctx.Configuration));
+            builder.Host.UseSerilog((ctx, loggerConfiguration) =>
+            {
+                loggerConfiguration.WriteTo.Console();
+                loggerConfiguration.WriteTo.File(path: $"./logs/log.log", rollingInterval: RollingInterval.Day);
+                loggerConfiguration.ReadFrom.Configuration(ctx.Configuration);
+            });
+
 
             // -------------------------------------------------------------------------------------------------------------------------- >8
 
@@ -113,10 +117,9 @@ namespace Vocab.WebApi
             }
 
             // -------------------------------------------------------------------------------------------------------------------------- >8
-            app.Run(); 
+            app.Run();
             #endregion
         }
     }
 }
-#warning почекать verify-token-audience
 // https://github.com/edinSahbaz/clean-api-template?tab=readme-ov-file

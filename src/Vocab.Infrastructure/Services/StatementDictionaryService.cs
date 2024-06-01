@@ -36,7 +36,7 @@ namespace Vocab.Infrastructure.Services
             offset.Throw().IfNegative();
 
             StatementDictionary[] statementDictionaries = await context.StatementDictionaries
-                .Where(x => x.OwnerId == userId).Skip(offset).Take(15).OrderBy(x=>x.Name).ToArrayAsync();
+                .Where(x => x.OwnerId == userId).OrderBy(x => x.Name).Skip(offset).Take(15).ToArrayAsync();
             return ResultVocab.Ok().AddValue(statementDictionaries);
         }
 

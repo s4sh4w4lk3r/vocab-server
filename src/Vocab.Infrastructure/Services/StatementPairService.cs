@@ -119,7 +119,7 @@ namespace Vocab.Infrastructure.Services
             }
 
             StatementPair[] statementPairs = await context.StatementPairs
-                .Where(x => x.StatementsDictionaryId == dictionaryId).Skip(offset).Take(STATEMENT_PAIRS_LIMIT).OrderBy(x=>x.Source).ToArrayAsync();
+                .Where(x => x.StatementsDictionaryId == dictionaryId).OrderBy(x => x.Source).Skip(offset).Take(STATEMENT_PAIRS_LIMIT).ToArrayAsync();
             return ResultVocab.Ok().AddValue(statementPairs);
         }
     }
