@@ -1,4 +1,5 @@
 ﻿using Keycloak.AuthServices.Authentication;
+using Keycloak.AuthServices.Common;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -61,9 +62,11 @@ namespace Vocab.WebApi
             services.AddKeycloakWebApiAuthentication(configuration);
             services.AddAuthorization();
 
-            string kcServerUrl = configuration.GetRequiredSection("Keycloak:auth-server-url").Value.ThrowIfNull().IfEmpty().IfWhiteSpace().Value;
-            string realm = configuration.GetRequiredSection("Keycloak:realm").Value.ThrowIfNull().IfEmpty().IfWhiteSpace().Value;
-            Uri kcUri = new($"{kcServerUrl}realms/{realm}");
+            Uri kcUri;
+            {
+                string kcUrlStr = configuration.GetKeycloakOptions<KeycloakAuthenticationOptions>()?.KeycloakUrlRealm.ThrowIfNull().IfEmpty().IfWhiteSpace().Value!;
+                kcUri = new(kcUrlStr);
+            }
 
             services.AddSwaggerVocab(kcUri);
 
