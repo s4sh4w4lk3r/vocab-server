@@ -29,8 +29,9 @@ namespace Vocab.WebApi
 
             builder.Host.UseSerilog((ctx, loggerConfiguration) =>
             {
-                loggerConfiguration.WriteTo.Console();
-                loggerConfiguration.WriteTo.File(path: $"./logs/log.log", rollingInterval: RollingInterval.Day);
+                string template = "[{Timestamp:HH:mm:ss} {Level:u3} {TraceId}] {Message:lj}{NewLine}{Exception}";
+                loggerConfiguration.WriteTo.Console(outputTemplate: template);
+                loggerConfiguration.WriteTo.File(path: $"./logs/log.log", rollingInterval: RollingInterval.Day, outputTemplate: template);
                 loggerConfiguration.ReadFrom.Configuration(ctx.Configuration);
             });
 
