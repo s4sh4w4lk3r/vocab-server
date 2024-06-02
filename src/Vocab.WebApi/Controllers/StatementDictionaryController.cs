@@ -26,8 +26,8 @@ namespace Vocab.WebApi.Controllers
             return result.ToActionResult();
         }
 
-        [HttpPatch, Route("{dictionaryId:long:min(1)}")]
-        public async Task<IActionResult> Rename([FromRoute] long dictionaryId, [FromQuery, Required] string name)
+        [HttpPatch, Route("{dictionaryId:long:min(1)}/set/name/{name:length(1, 256)}")]
+        public async Task<IActionResult> Rename([FromRoute] long dictionaryId, string name)
         {
             Guid userId = this.GetUserGuid();
             var result = await statementDictionaryService.SetName(userId, dictionaryId, name);

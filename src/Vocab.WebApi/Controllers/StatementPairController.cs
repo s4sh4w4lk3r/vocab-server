@@ -9,7 +9,7 @@ namespace Vocab.WebApi.Controllers
     [Route("statements")]
     public class StatementPairController(IStatementPairService statementPairService) : ControllerBase
     {
-        [HttpPatch, Route("{statementPairId:long:min(1)}/set/source/{sourceValue:required:minlength(1)}")] 
+        [HttpPatch, Route("{statementPairId:long:min(1)}/set/source/{sourceValue:length(1, 512)}")] 
         public async Task<IActionResult> SetSource(long statementPairId, string sourceValue)
         {
             Guid userGuid = this.GetUserGuid();
@@ -17,7 +17,7 @@ namespace Vocab.WebApi.Controllers
             return result.ToActionResult();
         }
 
-        [HttpPatch, Route("{statementPairId:long:min(1)}/set/target/{targetValue:required:minlength(1)}")]
+        [HttpPatch, Route("{statementPairId:long:min(1)}/set/target/{targetValue:length(1, 512)}")]
         public async Task<IActionResult> SetTarget(long statementPairId, string targetValue)
         {
             Guid userGuid = this.GetUserGuid();
