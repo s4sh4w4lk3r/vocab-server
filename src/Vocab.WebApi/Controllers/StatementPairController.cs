@@ -33,6 +33,14 @@ namespace Vocab.WebApi.Controllers
             return result.ToActionResult();
         }
 
+        [HttpPatch, Route("{statementPairId:long:min(1)}/set/position/{priority:int}")]
+        public async Task<IActionResult> SetPositionPriority(long statementPairId, int priority)
+        {
+            Guid userGuid = this.GetUserGuid();
+            var result = await statementPairService.SetPositionPriority(userGuid, statementPairId, priority);
+            return result.ToActionResult();
+        }
+
         [HttpDelete, Route("{statementPairId:long:min(1)}")]
         public async Task<IActionResult> Delete(long statementPairId)
         {

@@ -1,4 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using System;
+using System.Collections.Generic;
 using Throw;
 using Vocab.Application.Abstractions.Services;
 using Vocab.Application.Constants;
@@ -49,7 +51,10 @@ namespace Vocab.Infrastructure.Services
             statementPairId.Throw().IfDefault();
             source.ThrowIfNull().IfEmpty().IfWhiteSpace();
 
-            return await ExecuteUpdateProperty(userId, statementPairId, x => x.Source, source);
+            int rowsUpdated = await context.StatementPairs
+                 .Where(sp => sp.StatementsDictionary!.OwnerId == userId && sp.Id == statementPairId)
+                 .ExecuteUpdateAsync(sp => sp.SetProperty(p => p.Source, source));
+            return rowsUpdated == 1 ? ResultVocab.Ok(ResultMessages.Updated) : ResultVocab.Fail(ResultMessages.NotFound);
         }
 
         public async Task<ResultVocab> SetTarget(Guid userId, long statementPairId, string target)
@@ -58,7 +63,10 @@ namespace Vocab.Infrastructure.Services
             statementPairId.Throw().IfDefault();
             target.ThrowIfNull().IfEmpty().IfWhiteSpace();
 
-            return await ExecuteUpdateProperty(userId, statementPairId, x => x.Target, target);
+            int rowsUpdated = await context.StatementPairs
+                .Where(sp => sp.StatementsDictionary!.OwnerId == userId && sp.Id == statementPairId)
+                .ExecuteUpdateAsync(sp => sp.SetProperty(p => p.Target, target));
+            return rowsUpdated == 1 ? ResultVocab.Ok(ResultMessages.Updated) : ResultVocab.Fail(ResultMessages.NotFound);
         }
 
         public async Task<ResultVocab> SetCategory(Guid userId, long statementPairId, StatementCategory category)
@@ -67,18 +75,9 @@ namespace Vocab.Infrastructure.Services
             statementPairId.Throw().IfDefault();
             category.Throw().IfOutOfRange();
 
-            return await ExecuteUpdateProperty(userId, statementPairId, x => x.StatementCategory, category);
-        }
-
-        private async Task<ResultVocab> ExecuteUpdateProperty<TProperty>(Guid userId, long statementPairId, Func<StatementPair, TProperty> func, TProperty value)
-        {
-            userId.Throw().IfDefault();
-            statementPairId.Throw().IfDefault();
-            func.ThrowIfNull();
-
             int rowsUpdated = await context.StatementPairs
                 .Where(sp => sp.StatementsDictionary!.OwnerId == userId && sp.Id == statementPairId)
-                .ExecuteUpdateAsync(sp => sp.SetProperty(func, value));
+                .ExecuteUpdateAsync(sp => sp.SetProperty(p => p.StatementCategory, category));
             return rowsUpdated == 1 ? ResultVocab.Ok(ResultMessages.Updated) : ResultVocab.Fail(ResultMessages.NotFound);
         }
 
@@ -103,6 +102,17 @@ namespace Vocab.Infrastructure.Services
                 .Where(x => x.StatementsDictionaryId == dictionaryId && x.StatementsDictionary!.OwnerId == userId)
                 .OrderByDescending(x => x.PositionPriority).ThenBy(x => x.Source).Skip(offset).Take(STATEMENT_PAIRS_LIMIT).ToArrayAsync();
             return ResultVocab.Ok().AddValue(statementPairs);
+        }
+
+        public async Task<ResultVocab> SetPositionPriority(Guid userId, long statementPairId, int positionPriority)
+        {
+            userId.Throw().IfDefault();
+            statementPairId.Throw().IfDefault();
+
+            int rowsUpdated = await context.StatementPairs
+                .Where(sp => sp.StatementsDictionary!.OwnerId == userId && sp.Id == statementPairId)
+                .ExecuteUpdateAsync(sp => sp.SetProperty(p=>p.PositionPriority, positionPriority));
+            return rowsUpdated == 1 ? ResultVocab.Ok(ResultMessages.Updated) : ResultVocab.Fail(ResultMessages.NotFound);
         }
     }
 }

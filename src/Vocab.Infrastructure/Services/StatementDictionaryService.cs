@@ -108,5 +108,14 @@ namespace Vocab.Infrastructure.Services
             return rowsUpdated == 1 ? ResultVocab.Ok(ResultMessages.Updated) : ResultVocab.Fail(ResultMessages.UpdateError);
         }
 
+        public async Task<ResultVocab> SetPositionPriority(Guid userId, long dictionaryId, int positionPriority)
+        {
+            userId.Throw().IfDefault();
+            dictionaryId.Throw().IfDefault();
+
+            int rowsUpdated = await context.StatementDictionaries.Where(sd => sd.OwnerId == userId && sd.Id == dictionaryId)
+                .ExecuteUpdateAsync(sd => sd.SetProperty(p => p.PositionPriority, positionPriority));
+            return rowsUpdated == 1 ? ResultVocab.Ok(ResultMessages.Updated) : ResultVocab.Fail(ResultMessages.UpdateError);
+        }
     }
 }

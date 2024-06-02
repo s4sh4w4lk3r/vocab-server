@@ -14,5 +14,6 @@ namespace Vocab.Application.Abstractions.Services
         public Task<ResultVocab> SetSource(Guid userId, long statementPairId, string source);
         public Task<ResultVocab> SetTarget(Guid userId, long statementPairId, string target);
         public Task<ResultVocab> SetCategory(Guid userId, long statementPairId, StatementCategory category);
+        public Task<ResultVocab> SetPositionPriority(Guid userId, long statementPairId, int positionPriority);
     }
 }

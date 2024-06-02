@@ -34,6 +34,14 @@ namespace Vocab.WebApi.Controllers
             return result.ToActionResult();
         }
 
+        [HttpPatch, Route("{dictionaryId:long:min(1)}/set/position/{priority:int}")]
+        public async Task<IActionResult> SetPositionPriority(long dictionaryId, int priority)
+        {
+            Guid userGuid = this.GetUserGuid();
+            var result = await statementDictionaryService.SetPositionPriority(userGuid, dictionaryId, priority);
+            return result.ToActionResult();
+        }
+
         [HttpPost, Route("{dictionaryId:long:min(1)}/import")]
         public async Task<IActionResult> ImportStatements([FromRoute] long dictionaryId, IFormFile statements, [FromQuery] string separator = " - ")
         {
