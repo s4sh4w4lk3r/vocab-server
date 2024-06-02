@@ -1,5 +1,4 @@
 ﻿using System.Diagnostics.CodeAnalysis;
-using System.Text.Json.Serialization;
 
 namespace Vocab.Core.Entities
 {
@@ -10,7 +9,7 @@ namespace Vocab.Core.Entities
         public required Guid OwnerId { get; init; }
         public required DateTime LastModified { get; init; }
 
-        [JsonIgnore] public ICollection<StatementPair> StatementPairs => new HashSet<StatementPair>();
+        public ICollection<StatementPair> StatementPairs { get; set; } = new HashSet<StatementPair>();
 
         [SetsRequiredMembers]
         public StatementDictionary(long id, string name, Guid ownerId, DateTime lastModified) : this()

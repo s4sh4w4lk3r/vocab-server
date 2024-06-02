@@ -54,10 +54,10 @@ namespace Vocab.WebApi.Controllers
         }
 
         [HttpGet, Route("")]
-        public async Task<IActionResult> GetDictionariesArray([FromQuery] int offset = 0)
+        public async Task<IActionResult> GetDictionariesArray([FromQuery] int offset = 0, [FromQuery] bool appendTopStatements = false)
         {
             Guid userId = this.GetUserGuid();
-            var result = await statementDictionaryService.GetUserDictionaries(userId, offset);
+            var result = await statementDictionaryService.GetUserDictionaries(userId, appendTopStatements, offset);
             return result.ToActionResult();
         }
 

@@ -26,17 +26,33 @@ namespace Vocab.Infrastructure.Services
             userId.Throw().IfDefault();
             dictionaryId.Throw().IfDefault();
 
-            StatementDictionary? statementDictionary = await context.StatementDictionaries.SingleOrDefaultAsync(x=>x.Id == dictionaryId && x.OwnerId == userId);
+            StatementDictionary? statementDictionary = await context.StatementDictionaries.AsNoTracking().SingleOrDefaultAsync(x=>x.Id == dictionaryId && x.OwnerId == userId);
             return statementDictionary is not null ? ResultVocab.Ok().AddValue(statementDictionary) : ResultVocab.Fail(ResultMessages.NotFound).AddValue(default(StatementDictionary));
         }
 
-        public async Task<ResultVocab<StatementDictionary[]>> GetUserDictionaries(Guid userId, int offset)
+        public async Task<ResultVocab<StatementDictionary[]>> GetUserDictionaries(Guid userId, bool appendSomeTopStatements, int offset)
         {
             userId.Throw().IfDefault();
             offset.Throw().IfNegative();
 
-            StatementDictionary[] statementDictionaries = await context.StatementDictionaries
-                .Where(x => x.OwnerId == userId).OrderBy(x => x.Name).Skip(offset).Take(15).ToArrayAsync();
+            const int NUMBER_OF_DICTIONARIES = 15;
+            const int NUMBER_OF_TOP_STATEMENTS = 15;
+
+            StatementDictionary[] statementDictionaries;
+
+            if (appendSomeTopStatements)
+            {
+                statementDictionaries = await context.StatementDictionaries.AsNoTracking().Where(x => x.OwnerId == userId)
+                 .OrderBy(x => x.Name).Skip(offset).Take(NUMBER_OF_DICTIONARIES).
+                 Include(x=>x.StatementPairs.OrderBy(z => z.Source).Take(NUMBER_OF_TOP_STATEMENTS))
+                 .ToArrayAsync();
+            }
+            else
+            {
+                statementDictionaries = await context.StatementDictionaries.AsNoTracking().Where(x => x.OwnerId == userId)
+                .OrderBy(x => x.Name).Skip(offset).Take(NUMBER_OF_DICTIONARIES).ToArrayAsync();
+            }
+
             return ResultVocab.Ok().AddValue(statementDictionaries);
         }
 
@@ -174,4 +190,5 @@ namespace Vocab.Infrastructure.Services
             return ResultVocab.Ok().AddValue((statementPairs, failedStatementPairs));
         } 
     }
+#warning уменьшить класс
 }
