@@ -24,7 +24,7 @@ namespace Vocab.Infrastructure.Services
         private const int MAX_ATTEMPTS_TO_PICK_TARGET = 5;
         private const int WEBSOCKET_BUFFER_SIZE_KB = 4;
 
-        private static readonly TimeSpan webSocketTimeout = TimeSpan.FromSeconds(10);
+        private static readonly TimeSpan webSocketTimeout = TimeSpan.FromSeconds(310);
 
         private Queue<ChallengeStatementsPair> statementsPairsQueue = [];
         private Guid userId;
