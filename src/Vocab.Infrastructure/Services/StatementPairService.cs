@@ -100,7 +100,8 @@ namespace Vocab.Infrastructure.Services
             const int STATEMENT_PAIRS_LIMIT = 100;
 
             StatementPair[] statementPairs = await context.StatementPairs.AsNoTracking()
-                .Where(x => x.StatementsDictionaryId == dictionaryId && x.StatementsDictionary!.OwnerId == userId).OrderBy(x => x.Source).Skip(offset).Take(STATEMENT_PAIRS_LIMIT).ToArrayAsync();
+                .Where(x => x.StatementsDictionaryId == dictionaryId && x.StatementsDictionary!.OwnerId == userId)
+                .OrderByDescending(x => x.PositionPriority).ThenBy(x => x.Source).Skip(offset).Take(STATEMENT_PAIRS_LIMIT).ToArrayAsync();
             return ResultVocab.Ok().AddValue(statementPairs);
         }
     }

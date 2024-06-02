@@ -8,6 +8,7 @@ namespace Vocab.Core.Entities
         public required string Name { get; init; }
         public required Guid OwnerId { get; init; }
         public required DateTime LastModified { get; init; }
+        public required int PositionPriority { get; init; }
 
         public ICollection<StatementPair> StatementPairs { get; set; } = new HashSet<StatementPair>();
 

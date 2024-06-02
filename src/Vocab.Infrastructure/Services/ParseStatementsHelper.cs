@@ -51,7 +51,8 @@ namespace Vocab.Infrastructure.Services
                     StatementsDictionaryId = dictionaryId,
                     Source = statements[0],
                     Target = statements[1],
-                    StatementCategory = Core.Enums.StatementCategory.None
+                    StatementCategory = Core.Enums.StatementCategory.None,
+                    PositionPriority = 0,
                 };
 
                 if (!validator.Validate(statement).IsValid)

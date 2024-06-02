@@ -43,14 +43,14 @@ namespace Vocab.Infrastructure.Services
             if (appendSomeTopStatements)
             {
                 statementDictionaries = await context.StatementDictionaries.AsNoTracking().Where(x => x.OwnerId == userId)
-                 .OrderBy(x => x.Name).Skip(offset).Take(NUMBER_OF_DICTIONARIES).
+                 .OrderByDescending(x => x.PositionPriority).ThenBy(x => x.Name).Skip(offset).Take(NUMBER_OF_DICTIONARIES).
                  Include(x=>x.StatementPairs.OrderBy(z => z.Source).Take(NUMBER_OF_TOP_STATEMENTS))
                  .ToArrayAsync();
             }
             else
             {
                 statementDictionaries = await context.StatementDictionaries.AsNoTracking().Where(x => x.OwnerId == userId)
-                .OrderBy(x => x.Name).Skip(offset).Take(NUMBER_OF_DICTIONARIES).ToArrayAsync();
+                .OrderByDescending(x => x.PositionPriority).ThenBy(x=>x.Name).Skip(offset).Take(NUMBER_OF_DICTIONARIES).ToArrayAsync();
             }
 
             return ResultVocab.Ok().AddValue(statementDictionaries);
