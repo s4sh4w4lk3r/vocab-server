@@ -12,7 +12,7 @@ namespace Vocab.Infrastructure.Services
 {
     public class StatementPairService(VocabContext context) : IStatementPairService
     {
-        public async Task<ResultVocab<StatementPair>> Insert(Guid userId, StatementPair statementPair)
+        public async Task<ResultVocab<StatementPair>> Add(Guid userId, StatementPair statementPair)
         {
             userId.Throw().IfDefault();
             statementPair.ThrowIfNull();
@@ -61,19 +61,6 @@ namespace Vocab.Infrastructure.Services
             return await ExecuteUpdateProperty(userId, statementPairId, x => x.Target, target);
         }
 
-        public async Task<ResultVocab<StatementPair>> Update(Guid userId, StatementPair statementPair)
-        {
-            userId.Throw().IfDefault();
-            statementPair.ThrowIfNull();
-
-            if (!await context.StatementDictionaries.AnyAsync(sd=>sd.OwnerId == userId && sd.Id == statementPair.StatementsDictionaryId))
-            {
-                return ResultVocab.Fail("userId не соответствует ownerId или указанный словарь не найден.").AddValue(default(StatementPair));
-            }
-
-            context.StatementPairs.Update(statementPair);
-            return (await context.TrySaveChangesAsync(ResultMessages.Added)).AddValue(statementPair);
-        }
         public async Task<ResultVocab> SetCategory(Guid userId, long statementPairId, StatementCategory category)
         {
             userId.Throw().IfDefault();
@@ -112,14 +99,8 @@ namespace Vocab.Infrastructure.Services
 
             const int STATEMENT_PAIRS_LIMIT = 100;
 
-            bool isDictionaryExists = await context.StatementDictionaries.AnyAsync(x => x.Id == dictionaryId && x.OwnerId == userId);
-            if (isDictionaryExists is false)
-            {
-                return ResultVocab.Fail(ResultMessages.NotFound).AddValue(default(StatementPair[]));
-            }
-
-            StatementPair[] statementPairs = await context.StatementPairs
-                .Where(x => x.StatementsDictionaryId == dictionaryId).OrderBy(x => x.Source).Skip(offset).Take(STATEMENT_PAIRS_LIMIT).ToArrayAsync();
+            StatementPair[] statementPairs = await context.StatementPairs.AsNoTracking()
+                .Where(x => x.StatementsDictionaryId == dictionaryId && x.StatementsDictionary!.OwnerId == userId).OrderBy(x => x.Source).Skip(offset).Take(STATEMENT_PAIRS_LIMIT).ToArrayAsync();
             return ResultVocab.Ok().AddValue(statementPairs);
         }
     }

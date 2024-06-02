@@ -9,7 +9,6 @@ namespace Vocab.WebApi.Controllers
     [Route("statements")]
     public class StatementPairController(IStatementPairService statementPairService) : ControllerBase
     {
-#warning проверить
         [HttpPatch, Route("{statementPairId:long:min(1)}/set/source/{sourceValue:required:minlength(1)}")] 
         public async Task<IActionResult> SetSource(long statementPairId, string sourceValue)
         {
@@ -46,7 +45,7 @@ namespace Vocab.WebApi.Controllers
         public async Task<IActionResult> Add(StatementPairDto statementPairDto)
         {
             Guid userGuid = this.GetUserGuid();
-            var result = await statementPairService.Insert(userGuid, statementPairDto.ToEntity());
+            var result = await statementPairService.Add(userGuid, statementPairDto.ToEntity());
             return result.ToActionResult();
         }
 

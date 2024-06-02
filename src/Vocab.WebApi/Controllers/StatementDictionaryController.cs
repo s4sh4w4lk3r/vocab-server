@@ -9,13 +9,12 @@ namespace Vocab.WebApi.Controllers
     [Route("dictionaries")]
     public class StatementDictionaryController(IStatementDictionaryService statementDictionaryService, IStatementPairService statementPairService) : ControllerBase
     {
-#warning проверить
         [HttpPost]
-        public async Task<IActionResult> Insert([FromQuery, Required] string name)
+        public async Task<IActionResult> Add([FromQuery, Required] string name)
         {
             Guid userId = this.GetUserGuid();
             StatementDictionary statementDictionary = new(default, name, userId, DateTime.UtcNow);
-            var result = await statementDictionaryService.Insert(userId, statementDictionary);
+            var result = await statementDictionaryService.Add(userId, statementDictionary);
             return result.ToActionResult();
         }
 

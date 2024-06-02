@@ -11,7 +11,6 @@ namespace Vocab.Infrastructure.Services
 {
     public class RatingService(VocabContext vocabContext) : IRatingService
     {
-#warning проверить
         public async Task<ResultVocab<AnswerResult>> HandleAnswer(Guid userId, long statementPairId, string userGuess)
         {
             userId.Throw().IfDefault();
