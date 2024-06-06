@@ -17,20 +17,20 @@ namespace Vocab.Infrastructure.Services
             statementPairId.Throw().IfDefault();
             userGuess.ThrowIfNull().IfEmpty().IfWhiteSpace();
 
-            StatementPair? rightTagret = await vocabContext.StatementPairs
+            StatementPair? rightTarget = await vocabContext.StatementPairs
                 .Where(x => x.Id == statementPairId && x.StatementsDictionary!.OwnerId == userId)
                 .SingleOrDefaultAsync();
 
-            if (rightTagret is null)
+            if (rightTarget is null)
             {
                 return ResultVocab.Fail("Словосочетание не найдено").AddValue(default(AnswerResult));
             }
 
-            int prevRating = rightTagret.GuessingLevel;
+            int prevRating = rightTarget.GuessingLevel;
 
-            AnswerResult answerResult = string.Equals(userGuess, rightTagret.Target, StringComparison.InvariantCultureIgnoreCase)
-                ? new(CurrentRating: rightTagret.IncreaseRating(), IsAnswerRight: true) 
-                : new(CurrentRating: rightTagret.DecreaseRating(), IsAnswerRight: false);
+            AnswerResult answerResult = string.Equals(userGuess, rightTarget.Target, StringComparison.InvariantCultureIgnoreCase)
+                ? new(CurrentRating: rightTarget.IncreaseRating(), IsAnswerRight: true) 
+                : new(CurrentRating: rightTarget.DecreaseRating(), IsAnswerRight: false);
 
 
             if (prevRating != answerResult.CurrentRating)
