@@ -1,5 +1,8 @@
-﻿using Microsoft.OpenApi.Models;
+﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.OpenApi.Models;
 using System.Reflection;
+using Throw;
+using Vocab.Infrastructure.Persistence;
 
 namespace Vocab.WebApi.Extensions
 {
@@ -40,6 +43,18 @@ namespace Vocab.WebApi.Extensions
                     }
                 });
             });
+        }
+
+        public static void AddVocabDbContext(this IServiceCollection services, string connectionString, bool sensitiveDataLoggingEnabled)
+        {
+            services.AddDbContext<VocabContext>(options =>
+            {
+                connectionString.ThrowIfNull().IfEmpty().IfWhiteSpace();
+
+                options.EnableSensitiveDataLogging(sensitiveDataLoggingEnabled: sensitiveDataLoggingEnabled);
+                options.UseSqlServer(connectionString, options => options.MigrationsAssembly("Vocab.WebApi"));
+            },
+           contextLifetime: ServiceLifetime.Scoped, optionsLifetime: ServiceLifetime.Scoped);
         }
     }
 }

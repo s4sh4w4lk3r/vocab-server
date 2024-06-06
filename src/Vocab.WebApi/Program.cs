@@ -3,11 +3,9 @@ using Keycloak.AuthServices.Common;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Options;
 using Serilog;
 using Throw;
 using Vocab.Application.Abstractions.Services;
-using Vocab.Infrastructure.Configuration;
 using Vocab.Infrastructure.Persistence;
 using Vocab.Infrastructure.Services;
 using Vocab.WebApi.Extensions;
@@ -25,6 +23,7 @@ namespace Vocab.WebApi
             var builder = WebApplication.CreateBuilder(args);
             var services = builder.Services;
             var configuration = builder.Configuration;
+            bool isDevelopment = builder.Environment.IsDevelopment();
 
             // -------------------------------------------------------------------------------------------------------------------------- >8
 
@@ -44,29 +43,17 @@ namespace Vocab.WebApi
                 options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto | ForwardedHeaders.XForwardedHost;
             });
 
-            services.Configure<CorsConfiguration>(configuration.GetRequiredSection(nameof(CorsConfiguration)));
-
             // -------------------------------------------------------------------------------------------------------------------------- >8
 
             services.AddControllers();
-            services.AddDbContext<VocabContext>(options =>
-            {
-                string connString = configuration.GetConnectionString("SqlServer")
-                .ThrowIfNull().IfEmpty().IfWhiteSpace().Value;
-
-                options.EnableSensitiveDataLogging(sensitiveDataLoggingEnabled: builder.Environment.IsDevelopment());
-                options.UseSqlServer(connString, options => options.MigrationsAssembly("Vocab.WebApi"));
-            },
-            contextLifetime: ServiceLifetime.Scoped, optionsLifetime: ServiceLifetime.Scoped);
+            services.AddVocabDbContext(connectionString: configuration.GetConnectionString("SqlServer")!, 
+                sensitiveDataLoggingEnabled: isDevelopment);
 
             services.AddKeycloakWebApiAuthentication(configuration);
             services.AddAuthorization();
 
-            Uri kcUri;
-            {
-                string kcUrlStr = configuration.GetKeycloakOptions<KeycloakAuthenticationOptions>()?.KeycloakUrlRealm.ThrowIfNull().IfEmpty().IfWhiteSpace().Value!;
-                kcUri = new(kcUrlStr);
-            }
+            Uri kcUri = new(configuration.GetKeycloakOptions<KeycloakAuthenticationOptions>()
+                ?.KeycloakUrlRealm.ThrowIfNull().IfEmpty().IfWhiteSpace().Value!);
 
             services.AddSwaggerVocab(kcUri);
 
@@ -81,43 +68,31 @@ namespace Vocab.WebApi
 
             var app = builder.Build();
 
-            using var scope = app.Services.CreateScope();
-            var db = scope.ServiceProvider.GetRequiredService<VocabContext>();
-            var origins = scope.ServiceProvider.GetRequiredService<IOptions<CorsConfiguration>>().Value.Origins ?? throw new NullReferenceException("Конфигурация CORS не получена.");
+            using (var scope = app.Services.CreateScope())
+            {
+                var sp = scope.ServiceProvider;
+
+                Task ensureDatabaseTask = sp.EnsureDatabaseCanConnect<VocabContext>();
+                Task ensureKeycloakTask = sp.EnsureKeycloakCanConnect(kcUri);
+
+                await Task.WhenAll(ensureDatabaseTask, ensureKeycloakTask);
+            }
 
             app.UseForwardedHeaders();
-
             app.UseAuthentication();
             app.UseAuthorization();
 
+            string[] origins = configuration.GetRequiredSection("CorsConfiguration:Origins").Get<string[]>()
+                .ThrowIfNull(_ => new NullReferenceException("Конфигурация CORS не получена.")).Value!;
             app.UseCors(o => o.AllowAnyMethod().AllowAnyHeader().WithOrigins(origins));
 
             app.UseWebSockets();
             app.MapControllers().RequireAuthorization();
 
-            if (app.Environment.IsDevelopment())
+            if (isDevelopment is true)
             {
                 app.UseSwagger();
                 app.UseSwaggerUI();
-                //db.Database.EnsureCreated();
-            }
-
-            // -------------------------------------------------------------------------------------------------------------------------- >8
-
-            db.Database.CanConnect().Throw(_ => new InvalidOperationException("Не получилось подключиться к базе данных.")).IfFalse();
-            using (HttpClient httpClient = new())
-            {
-                string kcExceptionMessage = "Не получилось подключиться к серверу аутентификации.";
-                try
-                {
-                    bool isSuccess = (await httpClient.GetAsync(kcUri)).IsSuccessStatusCode;
-                    isSuccess.Throw(_ => new InvalidOperationException(kcExceptionMessage)).IfFalse();
-                }
-                catch (HttpRequestException ex)
-                {
-                    throw new InvalidOperationException(kcExceptionMessage, ex);
-                }
-
             }
 
             // -------------------------------------------------------------------------------------------------------------------------- >8
