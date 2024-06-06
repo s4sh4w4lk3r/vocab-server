@@ -17,5 +17,4 @@
   <ItemGroup>
     <Folder Include="Persistence\Repositories\" />
   </ItemGroup>
-
 </Project>
