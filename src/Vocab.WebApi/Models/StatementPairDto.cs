@@ -20,7 +20,6 @@ namespace Vocab.WebApi.Models
                 StatementCategory = StatementCategory,
                 StatementsDictionaryId = RelatedDictionaryId,
                 LastModified = DateTime.UtcNow,
-                PositionPriority = 0
             };
         }
     }

@@ -12,6 +12,7 @@ namespace Vocab.WebApi.Extensions
             TDbContext db = serviceProvider.GetRequiredService<TDbContext>();
             bool canConnect = await db.Database.CanConnectAsync();
             canConnect.Throw(_ => new InvalidOperationException("Не получилось подключиться к базе данных.")).IfFalse();
+            //await db.Database.EnsureCreatedAsync();
         }
 
         public static async Task EnsureKeycloakCanConnect(this IServiceProvider serviceProvider, Uri kcUri)
