@@ -19,7 +19,6 @@ namespace Vocab.Core.Entities
         /// </summary>
         public int GuessingLevel { get; private set; } = MIN_GUESSING_LEVEL;
         public required DateTime LastModified { get; init; }
-        public required int PositionPriority { get; init; }
 
         public required long StatementsDictionaryId { get; init; }
         [JsonIgnore] public StatementDictionary? StatementsDictionary { get; init; }

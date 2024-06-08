@@ -1,6 +1,4 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
 using Throw;
 using Vocab.Application.Abstractions.Services;
 using Vocab.Application.Constants;
@@ -100,19 +98,8 @@ namespace Vocab.Infrastructure.Services
 
             StatementPair[] statementPairs = await context.StatementPairs.AsNoTracking()
                 .Where(x => x.StatementsDictionaryId == dictionaryId && x.StatementsDictionary!.OwnerId == userId)
-                .OrderByDescending(x => x.PositionPriority).ThenBy(x => x.Source).Skip(offset).Take(STATEMENT_PAIRS_LIMIT).ToArrayAsync();
+                .OrderBy(x => x.Source).Skip(offset).Take(STATEMENT_PAIRS_LIMIT).ToArrayAsync();
             return ResultVocab.Ok().AddValue(statementPairs);
-        }
-
-        public async Task<ResultVocab> SetPositionPriority(Guid userId, long statementPairId, int positionPriority)
-        {
-            userId.Throw().IfDefault();
-            statementPairId.Throw().IfDefault();
-
-            int rowsUpdated = await context.StatementPairs
-                .Where(sp => sp.StatementsDictionary!.OwnerId == userId && sp.Id == statementPairId)
-                .ExecuteUpdateAsync(sp => sp.SetProperty(p=>p.PositionPriority, positionPriority));
-            return rowsUpdated == 1 ? ResultVocab.Ok(ResultMessages.Updated) : ResultVocab.Fail(ResultMessages.NotFound);
         }
     }
 }
