@@ -6,9 +6,10 @@ using System.Text.Json;
 using Throw;
 using Vocab.Application.Abstractions.Services;
 using Vocab.Application.Types;
-using Vocab.Application.ValueObjects;
+using Vocab.Application.ValueObjects.Result;
 using Vocab.Core.Entities;
 using Vocab.Infrastructure.Persistence;
+using Vocab.Infrastructure.Services.Errors;
 
 namespace Vocab.Infrastructure.Services
 {
@@ -34,14 +35,14 @@ namespace Vocab.Infrastructure.Services
             this.userId = userId.Throw().IfDefault().Value;
 
             var getGameResult = await GetStatementsForChallenge(userId, dictionaryId, gameLength);
-            if (getGameResult.Success is false || getGameResult.Value is not { Length: >= MIN_WORDS_REQUIRED })
+            if (getGameResult.IsSuccess is false || getGameResult.Value is not { Length: >= MIN_WORDS_REQUIRED })
             {
-                return ResultVocab.Fail("Выражения для игры не получены.").AddInnerResult(getGameResult);
+                return ResultVocab.Failure(getGameResult.Error);
             }
 
             statementsPairsQueue = new(getGameResult.Value);
 
-            return ResultVocab.Ok();
+            return ResultVocab.Success();
         }
 
         public async Task<ResultVocab> StartWebSocketHandling(WebSocket webSocket)
@@ -68,25 +69,25 @@ namespace Vocab.Infrastructure.Services
                 }
                 catch (OperationCanceledException)
                 {
-                    return ResultVocab.Fail("Время ожидания ответа вышло.");
+                    return ResultVocab.Failure(ChallengeErrors.ResponseTimeout);
                 }
 
                 string message = Encoding.UTF8.GetString(buffer, 0, buffer.Length).TrimEnd('\0');
                 var result = await ratingService.HandleAnswer(userId, challengeStatementsPair.StatementsPairId, message);
 
-                if (result.Success && result.Value is not null)
+                if (result.IsSuccess && result.Value is not null)
                 {
                     await SendResult(webSocket, result.Value);
                 }
                 else
                 {
                     await webSocket.CloseAsync(WebSocketCloseStatus.InternalServerError, "Произошла ошибка на сервере.", CancellationToken.None);
-                    throw new InvalidOperationException(result.Description);
+                    throw new InvalidOperationException(result.Error.Description);
                 }
             }
 
             await webSocket.CloseAsync(WebSocketCloseStatus.NormalClosure, string.Empty, CancellationToken.None);
-            return ResultVocab.Ok();
+            return ResultVocab.Success();
         }
 
         private static async Task SendStatement(WebSocket webSocket, ChallengeStatementsPair? challengeStatementsPair)
@@ -119,21 +120,16 @@ namespace Vocab.Infrastructure.Services
 
             if (gameLength > MAX_WORDS_REQUIRED || MIN_WORDS_REQUIRED > gameLength)
             {
-                return ResultVocab.Fail($"Количество слов для игры должно быть не меньше {MIN_WORDS_REQUIRED} и не более {MAX_WORDS_REQUIRED}.").AddValue(default(ChallengeStatementsPair[]));
+                return ResultVocab.Failure(ChallengeErrors.InvalidStatementsCount(MIN_WORDS_REQUIRED, MAX_WORDS_REQUIRED)).AddValue<ChallengeStatementsPair[]>(default);
             }
 
             StatementPair[] statementPairs = await context.StatementPairs
                 .Where(sp => sp.StatementsDictionary!.Id == dictionaryId && sp.StatementsDictionary.OwnerId == userId)
                 .OrderBy(sp => sp.GuessingLevel).Take(count: gameLength).ToArrayAsync();
 
-            if (statementPairs is { Length: 0 })
-            {
-                return ResultVocab.Fail("Словарь пустой или его не существует.").AddValue(default(ChallengeStatementsPair[]));
-            }
-
             if (statementPairs is { Length: < MIN_WORDS_REQUIRED })
             {
-                return ResultVocab.Fail("В словаре недостаточно слов для игры.").AddValue(default(ChallengeStatementsPair[]));
+                return ResultVocab.Failure(ChallengeErrors.TooFewStatements(statementPairs.Length, MIN_WORDS_REQUIRED)).AddValue<ChallengeStatementsPair[]>(default);
             }
 
             ChallengeStatementsPair[] challengeStatements = statementPairs.Select(x =>
@@ -159,7 +155,7 @@ namespace Vocab.Infrastructure.Services
 
             }).ToArray();
 
-            return ResultVocab.Ok().AddValue(challengeStatements);
+            return ResultVocab.Success().AddValue(challengeStatements);
         }
     }
 }
