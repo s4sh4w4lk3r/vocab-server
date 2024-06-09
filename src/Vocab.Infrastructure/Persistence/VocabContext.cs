@@ -1,7 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using Vocab.Application.ValueObjects;
 using Vocab.Core.Entities;
-using static Vocab.Application.Constants.ResultMessages;
 
 namespace Vocab.Infrastructure.Persistence
 {

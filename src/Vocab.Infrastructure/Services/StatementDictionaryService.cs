@@ -1,12 +1,12 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Throw;
 using Vocab.Application.Abstractions.Services;
-using Vocab.Application.Constants;
 using Vocab.Application.Types;
 using Vocab.Application.Validators;
-using Vocab.Application.ValueObjects;
+using Vocab.Application.ValueObjects.Result;
 using Vocab.Core.Entities;
 using Vocab.Infrastructure.Persistence;
+using Vocab.Infrastructure.Services.Errors;
 
 namespace Vocab.Infrastructure.Services
 {
@@ -18,7 +18,7 @@ namespace Vocab.Infrastructure.Services
             dictionaryId.Throw().IfDefault();
 
             int rowsDeleted = await context.StatementDictionaries.Where(sd => sd.Id == dictionaryId && sd.OwnerId == userId).ExecuteDeleteAsync();
-            return rowsDeleted == 1 ? ResultVocab.Ok(ResultMessages.Deleted) : ResultVocab.Fail(ResultMessages.NotFound);
+            return rowsDeleted == 1 ? ResultVocab.Success() : ResultVocab.Failure(StatementDictionaryErrors.NotFound);
         }
 
         public async Task<ResultVocab<StatementDictionary>> GetById(Guid userId, long dictionaryId)
@@ -27,7 +27,7 @@ namespace Vocab.Infrastructure.Services
             dictionaryId.Throw().IfDefault();
 
             StatementDictionary? statementDictionary = await context.StatementDictionaries.AsNoTracking().SingleOrDefaultAsync(x=>x.Id == dictionaryId && x.OwnerId == userId);
-            return statementDictionary is not null ? ResultVocab.Ok().AddValue(statementDictionary) : ResultVocab.Fail(ResultMessages.NotFound).AddValue(default(StatementDictionary));
+            return statementDictionary is not null ? ResultVocab.Success().AddValue(statementDictionary) : ResultVocab.Failure(StatementDictionaryErrors.NotFound).AddValue<StatementDictionary>(default);
         }
 
         public async Task<ResultVocab<StatementDictionary[]>> GetUserDictionaries(Guid userId, bool appendSomeTopStatements, int offset)
@@ -53,7 +53,7 @@ namespace Vocab.Infrastructure.Services
                 .OrderBy(x=>x.Name).Skip(offset).Take(NUMBER_OF_DICTIONARIES).ToArrayAsync();
             }
 
-            return ResultVocab.Ok().AddValue(statementDictionaries);
+            return ResultVocab.Success().AddValue(statementDictionaries);
         }
 
         public async Task<ResultVocab<ImportStatementsResult>> ImportStatements(Guid userId, long dictionaryId, Stream stream, string separator)
@@ -114,7 +114,7 @@ namespace Vocab.Infrastructure.Services
             name.ThrowIfNull().IfEmpty().IfWhiteSpace();
 
             int rowsUpdated = await context.StatementDictionaries.Where(sd => sd.OwnerId == userId && sd.Id == dictionaryId).ExecuteUpdateAsync(sd => sd.SetProperty(p => p.Name, name));
-            return rowsUpdated == 1 ? ResultVocab.Ok(ResultMessages.Updated) : ResultVocab.Fail(ResultMessages.UpdateError);
+            return rowsUpdated == 1 ? ResultVocab.Success() : ResultVocab.Failure(StatementDictionaryErrors.NotFound);
         }
 
     }
