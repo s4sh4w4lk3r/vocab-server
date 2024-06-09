@@ -43,14 +43,14 @@ namespace Vocab.Infrastructure.Services
             if (appendSomeTopStatements)
             {
                 statementDictionaries = await context.StatementDictionaries.AsNoTracking().Where(x => x.OwnerId == userId)
-                 .OrderByDescending(x => x.PositionPriority).ThenBy(x => x.Name).Skip(offset).Take(NUMBER_OF_DICTIONARIES).
+                 .OrderBy(x => x.Name).Skip(offset).Take(NUMBER_OF_DICTIONARIES).
                  Include(x=>x.StatementPairs.OrderBy(z => z.Source).Take(NUMBER_OF_TOP_STATEMENTS))
                  .ToArrayAsync();
             }
             else
             {
                 statementDictionaries = await context.StatementDictionaries.AsNoTracking().Where(x => x.OwnerId == userId)
-                .OrderByDescending(x => x.PositionPriority).ThenBy(x=>x.Name).Skip(offset).Take(NUMBER_OF_DICTIONARIES).ToArrayAsync();
+                .OrderBy(x=>x.Name).Skip(offset).Take(NUMBER_OF_DICTIONARIES).ToArrayAsync();
             }
 
             return ResultVocab.Ok().AddValue(statementDictionaries);
@@ -83,19 +83,28 @@ namespace Vocab.Infrastructure.Services
             return ResultVocab.Ok("Выражения импортированы успешно.").AddValue(importStatementsResult).AddInnerResult(dbSaveResult);
         }
 
-        public async Task<ResultVocab<StatementDictionary>> Add(Guid userId, StatementDictionary dictionary)
+        public async Task<ResultVocab<StatementDictionary>> Add(Guid userId, string name)
         {
             userId.Throw().IfDefault();
-            dictionary.ThrowIfNull();
+            name.ThrowIfNull().IfEmpty().IfWhiteSpace();
 
-            var valResult = new StatementDictionaryValidator(willBeInserted: true).Validate(dictionary);
+            StatementDictionary statementDictionary = new()
+            {
+                Id = default,
+                LastModified = DateTime.UtcNow,
+                Name = name,
+                OwnerId = userId,
+            };
+
+            var valResult = new StatementDictionaryValidator(willBeInserted: true).Validate(statementDictionary);
             if (!valResult.IsValid)
             {
                 return ResultVocab.Fail(valResult.ToString()).AddValue(default(StatementDictionary));
             }
 
-            await context.StatementDictionaries.AddAsync(dictionary);
-            return (await context.TrySaveChangesAsync(ResultMessages.Added)).AddValue(dictionary);
+
+            await context.StatementDictionaries.AddAsync(statementDictionary);
+            return (await context.TrySaveChangesAsync(ResultMessages.Added)).AddValue(statementDictionary);
         }
 
         public async Task<ResultVocab> SetName(Guid userId, long dictionaryId, string name)
@@ -108,14 +117,5 @@ namespace Vocab.Infrastructure.Services
             return rowsUpdated == 1 ? ResultVocab.Ok(ResultMessages.Updated) : ResultVocab.Fail(ResultMessages.UpdateError);
         }
 
-        public async Task<ResultVocab> SetPositionPriority(Guid userId, long dictionaryId, int positionPriority)
-        {
-            userId.Throw().IfDefault();
-            dictionaryId.Throw().IfDefault();
-
-            int rowsUpdated = await context.StatementDictionaries.Where(sd => sd.OwnerId == userId && sd.Id == dictionaryId)
-                .ExecuteUpdateAsync(sd => sd.SetProperty(p => p.PositionPriority, positionPriority));
-            return rowsUpdated == 1 ? ResultVocab.Ok(ResultMessages.Updated) : ResultVocab.Fail(ResultMessages.UpdateError);
-        }
     }
 }
