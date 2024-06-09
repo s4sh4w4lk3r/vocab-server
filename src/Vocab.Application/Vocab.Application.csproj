@@ -14,4 +14,8 @@
   <ItemGroup>
     <ProjectReference Include="..\Vocab.Core\Vocab.Core.csproj" />
   </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Constants\" />
+  </ItemGroup>
 </Project>

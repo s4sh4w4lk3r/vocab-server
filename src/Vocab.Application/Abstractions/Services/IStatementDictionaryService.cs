@@ -1,5 +1,5 @@
 ﻿using Vocab.Application.Types;
-using Vocab.Application.ValueObjects;
+using Vocab.Application.ValueObjects.Result;
 using Vocab.Core.Entities;
 
 namespace Vocab.Application.Abstractions.Services

@@ -1,5 +1,5 @@
 ﻿using System.Net.WebSockets;
-using Vocab.Application.ValueObjects;
+using Vocab.Application.ValueObjects.Result;
 
 namespace Vocab.Application.Abstractions.Services
 {
