@@ -1,6 +1,4 @@
-﻿using Vocab.Application.ValueObjects.ErrorResult;
-
-namespace Vocab.Application.ValueObjects.Result
+﻿namespace Vocab.Application.ValueObjects.Result
 {
     public class ResultVocab
     {

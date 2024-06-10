@@ -7,9 +7,9 @@ using Throw;
 using Vocab.Application.Abstractions.Services;
 using Vocab.Application.Types;
 using Vocab.Application.ValueObjects.Result;
+using Vocab.Application.ValueObjects.Result.Errors;
 using Vocab.Core.Entities;
 using Vocab.Infrastructure.Persistence;
-using Vocab.Infrastructure.Services.Errors;
 
 namespace Vocab.Infrastructure.Services
 {

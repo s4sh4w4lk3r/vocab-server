@@ -3,6 +3,7 @@ using Throw;
 using Vocab.Application.Abstractions.Services;
 using Vocab.Application.Types;
 using Vocab.Application.ValueObjects.Result;
+using Vocab.Application.ValueObjects.Result.Errors;
 using Vocab.Core.Entities;
 using Vocab.Infrastructure.Persistence;
 
@@ -22,7 +23,7 @@ namespace Vocab.Infrastructure.Services
 
             if (rightTarget is null)
             {
-                return ResultVocab.Fail("Словосочетание не найдено").AddValue(default(AnswerResult));
+                return ResultVocab.Failure(StatementPairErrors.NotFound).AddValue(default(AnswerResult));
             }
 
             int prevRating = rightTarget.GuessingLevel;
@@ -35,11 +36,11 @@ namespace Vocab.Infrastructure.Services
             if (prevRating != answerResult.CurrentRating)
             {
                 var saveToDbResult = await vocabContext.TrySaveChangesAsync();
-                return ResultVocab.Ok(ResultMessages.Updated).AddInnerResult(saveToDbResult).AddValue(answerResult);
+                return ResultVocab.Success().AddValue(answerResult);
             }
             else
             {
-                return ResultVocab.Ok(ResultMessages.Updated).AddValue(answerResult);
+                return ResultVocab.Success().AddValue(answerResult);
             }
         }
     }

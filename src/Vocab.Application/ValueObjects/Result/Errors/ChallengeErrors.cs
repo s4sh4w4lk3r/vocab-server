@@ -1,8 +1,6 @@
-﻿using Vocab.Application.ValueObjects.ErrorResult;
-
-namespace Vocab.Infrastructure.Services.Errors
+﻿namespace Vocab.Application.ValueObjects.Result.Errors
 {
-    internal class ChallengeErrors
+    public class ChallengeErrors
     {
         public static ErrorVocab InvalidStatementsCount(int minWords, int maxWords) =>
             ErrorVocab.Conflict("Challenge.InvalidStatementsCount", $"Количество слов для игры должно быть не меньше {minWords} и не более {maxWords}.");

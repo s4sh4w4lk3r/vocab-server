@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Vocab.Application.ValueObjects.Result;
 using Vocab.Core.Entities;
 
 namespace Vocab.Infrastructure.Persistence
@@ -29,11 +30,11 @@ namespace Vocab.Infrastructure.Persistence
             });
         }
 
-        public async Task<ResultVocab> TrySaveChangesAsync(string successMessage = "Операция в базе данных прошла успешно.", CancellationToken cancellationToken = default)
+        public async Task<ResultVocab<int>> TrySaveChangesAsync(CancellationToken cancellationToken = default)
         {
             try
             {
-                return await SaveChangesAsync(cancellationToken) != 0 ? ResultVocab.Ok(successMessage) : ResultVocab.Fail(NotFound);
+                return ResultVocab.Success().AddValue(await SaveChangesAsync(cancellationToken));
             }
 
             /*catch (DbUpdateConcurrencyException)

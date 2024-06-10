@@ -3,10 +3,10 @@ using Throw;
 using Vocab.Application.Abstractions.Services;
 using Vocab.Application.Validators;
 using Vocab.Application.ValueObjects.Result;
+using Vocab.Application.ValueObjects.Result.Errors;
 using Vocab.Core.Entities;
 using Vocab.Core.Enums;
 using Vocab.Infrastructure.Persistence;
-using Vocab.Infrastructure.Services.Errors;
 
 namespace Vocab.Infrastructure.Services
 {
@@ -20,16 +20,16 @@ namespace Vocab.Infrastructure.Services
             var valResult = new StatementPairValidator(willBeInserted: true).Validate(statementPair);
             if (!valResult.IsValid)
             {
-                return ResultVocab.Failure(StatementPairsErrors.Validation(valResult)).AddValue<long>(default);
+                return ResultVocab.Failure(StatementPairErrors.Validation(valResult)).AddValue<long>(default);
             }
 
             if (await context.StatementDictionaries.AnyAsync(sd => sd.OwnerId == userId && sd.Id == statementPair.StatementsDictionaryId))
             {
-                return ResultVocab.Failure(StatementPairsErrors.NotFound).AddValue<long>(default);
+                return ResultVocab.Failure(StatementPairErrors.NotFound).AddValue<long>(default);
             }
 
             await context.StatementPairs.AddAsync(statementPair);
-            return (await context.TrySaveChangesAsync(ResultMessages.Added)).AddValue(statementPair);
+            return (await context.TrySaveChangesAsync()).AddValue(statementPair.Id);
         }
 
         public async Task<ResultVocab> Delete(Guid userId, long statementPairId)
@@ -39,7 +39,7 @@ namespace Vocab.Infrastructure.Services
 
             int rowsDeleted = await context.StatementPairs
                 .Where(sp => sp.StatementsDictionary!.OwnerId == userId && sp.Id == statementPairId).ExecuteDeleteAsync();
-            return rowsDeleted == 1 ? ResultVocab.Success() : ResultVocab.Failure(StatementPairsErrors.NotFound);
+            return rowsDeleted == 1 ? ResultVocab.Success() : ResultVocab.Failure(StatementPairErrors.NotFound);
         }
 
         public async Task<ResultVocab> SetSource(Guid userId, long statementPairId, string source)
@@ -51,7 +51,7 @@ namespace Vocab.Infrastructure.Services
             int rowsUpdated = await context.StatementPairs
                  .Where(sp => sp.StatementsDictionary!.OwnerId == userId && sp.Id == statementPairId)
                  .ExecuteUpdateAsync(sp => sp.SetProperty(p => p.Source, source));
-            return rowsUpdated == 1 ? ResultVocab.Success() : ResultVocab.Failure(StatementPairsErrors.NotFound);
+            return rowsUpdated == 1 ? ResultVocab.Success() : ResultVocab.Failure(StatementPairErrors.NotFound);
         }
 
         public async Task<ResultVocab> SetTarget(Guid userId, long statementPairId, string target)
@@ -63,7 +63,7 @@ namespace Vocab.Infrastructure.Services
             int rowsUpdated = await context.StatementPairs
                 .Where(sp => sp.StatementsDictionary!.OwnerId == userId && sp.Id == statementPairId)
                 .ExecuteUpdateAsync(sp => sp.SetProperty(p => p.Target, target));
-            return rowsUpdated == 1 ? ResultVocab.Success() : ResultVocab.Failure(StatementPairsErrors.NotFound);
+            return rowsUpdated == 1 ? ResultVocab.Success() : ResultVocab.Failure(StatementPairErrors.NotFound);
         }
 
         public async Task<ResultVocab> SetCategory(Guid userId, long statementPairId, StatementCategory category)
@@ -75,7 +75,7 @@ namespace Vocab.Infrastructure.Services
             int rowsUpdated = await context.StatementPairs
                 .Where(sp => sp.StatementsDictionary!.OwnerId == userId && sp.Id == statementPairId)
                 .ExecuteUpdateAsync(sp => sp.SetProperty(p => p.StatementCategory, category));
-            return rowsUpdated == 1 ? ResultVocab.Success() : ResultVocab.Failure(StatementPairsErrors.NotFound);
+            return rowsUpdated == 1 ? ResultVocab.Success() : ResultVocab.Failure(StatementPairErrors.NotFound);
         }
 
         public async Task<ResultVocab<StatementPair>> GetById(Guid userId, long statementPairId)
@@ -84,7 +84,7 @@ namespace Vocab.Infrastructure.Services
             statementPairId.Throw().IfDefault();
 
             StatementPair? statementPair = await context.StatementPairs.SingleOrDefaultAsync(x => x.Id == statementPairId && x.StatementsDictionary!.OwnerId == userId);
-            return statementPair is not null ? ResultVocab.Success().AddValue(statementPair) : ResultVocab.Failure(StatementPairsErrors.NotFound).AddValue<StatementPair>(default);
+            return statementPair is not null ? ResultVocab.Success().AddValue(statementPair) : ResultVocab.Failure(StatementPairErrors.NotFound).AddValue<StatementPair>(default);
         }
 
         public async Task<ResultVocab<StatementPair[]>> GetDictionaryStatementPairs(Guid userId, long dictionaryId, int offset)

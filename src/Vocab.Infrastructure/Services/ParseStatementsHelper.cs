@@ -1,6 +1,7 @@
 ﻿using Throw;
 using Vocab.Application.Validators;
-using Vocab.Application.ValueObjects;
+using Vocab.Application.ValueObjects.Result;
+using Vocab.Application.ValueObjects.Result.Errors;
 using Vocab.Core.Entities;
 
 namespace Vocab.Infrastructure.Services
@@ -27,7 +28,7 @@ namespace Vocab.Infrastructure.Services
 
             if (lines.Length == 0)
             {
-                return ResultVocab.Fail("Ни одной строки не получено.").AddValue(default(ParseStatementsHelperResult));
+                return ResultVocab.Failure(StatementDictionaryErrors.EmptyLinesReceived).AddValue(default(ParseStatementsHelperResult));
             }
 
             List<string> failedStatementPairs = [];
@@ -68,10 +69,10 @@ namespace Vocab.Infrastructure.Services
 
             if (statementPairs.Count == 0)
             {
-                return ResultVocab.Fail("Ни одно выражение не импортировано.").AddValue(new ParseStatementsHelperResult([], failedStatementPairs));
+                return ResultVocab.Failure(StatementDictionaryErrors.NoExpressionImported).AddValue(new ParseStatementsHelperResult([], failedStatementPairs));
             }
 
-            return ResultVocab.Ok().AddValue(new ParseStatementsHelperResult(statementPairs, failedStatementPairs));
+            return ResultVocab.Success().AddValue(new ParseStatementsHelperResult(statementPairs, failedStatementPairs));
         }
 
         public record ParseStatementsHelperResult(List<StatementPair> StatementPairs, List<string> FailedStatementPairs);
