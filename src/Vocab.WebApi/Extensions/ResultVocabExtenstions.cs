@@ -1,14 +1,13 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Vocab.Application.ValueObjects.ErrorResult;
 using Vocab.Application.ValueObjects.Result;
 
 namespace Vocab.WebApi.Extensions
 {
     public static class ResultVocabExtenstions
     {
-        public static ProblemDetails ToProblemDetails<T>(this ResultVocab<T> result)
+        public static ProblemDetails ToProblemDetails(this ResultVocab result)
         {
-            if (result.IsSuccess) 
+            if (result.IsSuccess)
             {
                 throw new InvalidOperationException($"Вызов метода {nameof(ToProblemDetails)} у объекта Result, у которого IsSuccess == true, запрещен.");
             }
@@ -16,7 +15,6 @@ namespace Vocab.WebApi.Extensions
             return new ProblemDetails()
             {
                 Status = GetStatusCode(result.Error),
-                Type = GetType(result.Error),
                 Title = GetTitle(result.Error),
                 Extensions = new Dictionary<string, object?>()
                 {
@@ -24,6 +22,31 @@ namespace Vocab.WebApi.Extensions
                 }
             };
         }
+
+        public static IActionResult Match(this ResultVocab result, Func<IActionResult> onSuccess)
+        {
+            if (result.IsSuccess)
+            {
+                return onSuccess.Invoke();
+            }
+            else
+            {
+                return result.Error.ToObjectResult(result.ToProblemDetails());
+            }
+        }
+
+        public static ActionResult<T> Match<T>(this ResultVocab<T> result, Func<T, ActionResult<T>> onSuccess)
+        {
+            if (result.IsSuccess && result.Value is not null && result.Value.Equals(default))
+            {
+                return onSuccess.Invoke(result.Value);
+            }
+            else
+            {
+                return result.Error.ToObjectResult(result.ToProblemDetails());
+            }
+        }
+
 
         private static int GetStatusCode(ErrorVocab error)
         {
@@ -47,10 +70,16 @@ namespace Vocab.WebApi.Extensions
             };
         }
 
-        private static string GetType(ErrorVocab error)
+        private static ActionResult ToObjectResult(this ErrorVocab error, ProblemDetails problemDetails)
         {
-#warning найти типы сюда
-            return "bebra";
+            return error.ErrorType switch
+            {
+                ErrorType.Validation => new BadRequestObjectResult(problemDetails),
+                ErrorType.NotFound => new NotFoundObjectResult(problemDetails),
+                ErrorType.Conflict => new ConflictObjectResult(problemDetails),
+                _ => new StatusCodeResult(StatusCodes.Status500InternalServerError)
+            };
         }
+
     }
 }

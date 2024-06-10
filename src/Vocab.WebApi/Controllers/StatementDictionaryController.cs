@@ -10,70 +10,78 @@ namespace Vocab.WebApi.Controllers
     public class StatementDictionaryController(IStatementDictionaryService statementDictionaryService, IStatementPairService statementPairService) : ControllerBase
     {
         [HttpPost]
-        public async Task<IActionResult> Add([FromQuery, Required] string name)
+        [ProducesResponseType(StatusCodes.Status201Created)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<ActionResult<long>> Add([FromQuery, Required] string name)
         {
             Guid userId = this.GetUserGuid();
-            StatementDictionary statementDictionary = new(default, name, userId, DateTime.UtcNow);
-            var result = await statementDictionaryService.Add(userId, statementDictionary);
-            return result.ToActionResult();
+
+            var result = await statementDictionaryService.Add(userId, name);
+            return result.Match(onSuccess: id => Created("", id));
         }
 
+
         [HttpDelete, Route("{dictionaryId:long:min(1)}")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> Delete([FromRoute] long dictionaryId)
         {
             Guid userId = this.GetUserGuid();
             var result = await statementDictionaryService.Delete(userId, dictionaryId);
-            return result.ToActionResult();
+            return result.Match(NoContent);
         }
 
         [HttpPatch, Route("{dictionaryId:long:min(1)}/set/name/{name:length(1, 256)}")]
-        public async Task<IActionResult> Rename([FromRoute] long dictionaryId, string name)
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<IActionResult> SetName([FromRoute] long dictionaryId, string name)
         {
             Guid userId = this.GetUserGuid();
             var result = await statementDictionaryService.SetName(userId, dictionaryId, name);
-            return result.ToActionResult();
-        }
-
-        [HttpPatch, Route("{dictionaryId:long:min(1)}/set/position/{priority:int}")]
-        public async Task<IActionResult> SetPositionPriority(long dictionaryId, int priority)
-        {
-            Guid userGuid = this.GetUserGuid();
-            var result = await statementDictionaryService.SetPositionPriority(userGuid, dictionaryId, priority);
-            return result.ToActionResult();
+            return result.Match(NoContent);
         }
 
         [HttpPost, Route("{dictionaryId:long:min(1)}/import")]
+        [ProducesResponseType(StatusCodes.Status202Accepted)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> ImportStatements([FromRoute] long dictionaryId, IFormFile statements, [FromQuery] string separator = " - ")
         {
             Guid userId = this.GetUserGuid();
             using Stream stream = statements.OpenReadStream();
 
             var result = await statementDictionaryService.ImportStatements(userId, dictionaryId, stream, separator);
-            return result.ToActionResult();
+            return result.Match(Accepted);
         }
 
         [HttpGet, Route("{dictionaryId:long:min(1)}")]
-        public async Task<IActionResult> GetById(long dictionaryId)
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<ActionResult<StatementDictionary>> GetById(long dictionaryId)
         {
             Guid userId = this.GetUserGuid();
             var result = await statementDictionaryService.GetById(userId, dictionaryId);
-            return result.ToActionResult();
+            return result.Match(value => Ok(value));
         }
 
         [HttpGet, Route("")]
-        public async Task<IActionResult> GetDictionariesArray([FromQuery] int offset = 0, [FromQuery] bool appendTopStatements = false)
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<ActionResult<StatementDictionary[]>> GetDictionariesArray([FromQuery] int offset = 0, [FromQuery] bool appendTopStatements = false)
         {
             Guid userId = this.GetUserGuid();
             var result = await statementDictionaryService.GetUserDictionaries(userId, appendTopStatements, offset);
-            return result.ToActionResult();
+            return result.Match(value => Ok(value));
         }
 
         [HttpGet, Route("{dictionaryId:long:min(1)}/statements")]
-        public async Task<IActionResult> GetStatementPairsArray(long dictionaryId, [FromQuery] int offset = 0)
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<ActionResult<StatementPair[]>> GetStatementPairsArray(long dictionaryId, [FromQuery] int offset = 0)
         {
             Guid userGuid = this.GetUserGuid();
             var result = await statementPairService.GetDictionaryStatementPairs(userGuid, dictionaryId, offset);
-            return result.ToActionResult();
+            return result.Match(value => Ok(value));
         }
     }
 }
