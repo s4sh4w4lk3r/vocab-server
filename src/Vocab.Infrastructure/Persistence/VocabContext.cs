@@ -17,15 +17,15 @@ namespace Vocab.Infrastructure.Persistence
                 entity.HasOne(e => e.StatementsDictionary).WithMany(e => e.StatementPairs).HasForeignKey(e => e.StatementsDictionaryId).OnDelete(DeleteBehavior.Cascade).IsRequired();
                 entity.Property(e => e.GuessingLevel).HasDefaultValue(StatementPair.MIN_GUESSING_LEVEL);
 
-                entity.Property(x => x.Source).HasMaxLength(512);
-                entity.Property(x => x.Target).HasMaxLength(512);
+                entity.Property(x => x.Source).HasMaxLength(StatementPair.MAX_SOURCE_LENGTH);
+                entity.Property(x => x.Target).HasMaxLength(StatementPair.MAX_TARGET_LENGTH);
 
             });
 
             modelBuilder.Entity<StatementDictionary>(entity =>
             {
                 entity.HasKey(e => e.Id);
-                entity.Property(x => x.Name).HasMaxLength(256);
+                entity.Property(x => x.Name).HasMaxLength(StatementDictionary.MAX_NAME_LENGTH);
 
             });
         }

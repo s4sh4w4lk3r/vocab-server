@@ -9,6 +9,7 @@ namespace Vocab.Core.Entities
         public required Guid OwnerId { get; init; }
         public required DateTime LastModified { get; init; }
 
+        public const int MAX_NAME_LENGTH = 256;
         public ICollection<StatementPair> StatementPairs { get; set; } = new HashSet<StatementPair>();
 
         [SetsRequiredMembers]
