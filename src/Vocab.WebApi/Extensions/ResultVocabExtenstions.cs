@@ -37,7 +37,7 @@ namespace Vocab.WebApi.Extensions
 
         public static ActionResult<T> Match<T>(this ResultVocab<T> result, Func<T, ActionResult<T>> onSuccess)
         {
-            if (result.IsSuccess && result.Value is not null && result.Value.Equals(default))
+            if ((result.IsSuccess is true) && (result.Value is not null) && (result.Value.Equals(default) is false))
             {
                 return onSuccess.Invoke(result.Value);
             }

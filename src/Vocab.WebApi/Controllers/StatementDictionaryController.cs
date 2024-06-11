@@ -1,13 +1,16 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using System.ComponentModel.DataAnnotations;
 using Vocab.Application.Abstractions.Services;
 using Vocab.Core.Entities;
 using Vocab.WebApi.Extensions;
+using Vocab.WebApi.Models;
 
 namespace Vocab.WebApi.Controllers
 {
     [Route("dictionaries")]
-    public class StatementDictionaryController(IStatementDictionaryService statementDictionaryService, IStatementPairService statementPairService) : ControllerBase
+    public class StatementDictionaryController(IStatementDictionaryService statementDictionaryService, 
+        IStatementPairService statementPairService, IStatementsImportService statementsImportService) : ControllerBase
     {
         [HttpPost]
         [ProducesResponseType(StatusCodes.Status201Created)]
@@ -45,13 +48,14 @@ namespace Vocab.WebApi.Controllers
         [ProducesResponseType(StatusCodes.Status202Accepted)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> ImportStatements([FromRoute] long dictionaryId, IFormFile statements, [FromQuery] string separator = " - ")
+        [AllowAnonymous]
+        public async Task<ActionResult<string>> ImportStatements([FromRoute] long dictionaryId, [FromBody] ImportStatementsDto importStatementsModel)
         {
             Guid userId = this.GetUserGuid();
-            using Stream stream = statements.OpenReadStream();
 
-            var result = await statementDictionaryService.ImportStatements(userId, dictionaryId, stream, separator);
-            return result.Match(Accepted);
+            var result = await statementsImportService.ImportStatements(userId, dictionaryId, importStatementsModel.DocumentBase64, importStatementsModel.Separator);
+
+            return result.Match(jobid => Accepted("", result.Value));
         }
 
         [HttpGet, Route("{dictionaryId:long:min(1)}")]

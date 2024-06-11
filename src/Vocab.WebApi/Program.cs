@@ -1,4 +1,5 @@
-﻿using Keycloak.AuthServices.Authentication;
+﻿using Hangfire;
+using Keycloak.AuthServices.Authentication;
 using Keycloak.AuthServices.Common;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Mvc;
@@ -56,11 +57,14 @@ namespace Vocab.WebApi
                 ?.KeycloakUrlRealm.ThrowIfNull().IfEmpty().IfWhiteSpace().Value!);
 
             services.AddSwaggerVocab(kcUri);
+            services.AddVocabHangfire(configuration);
+            
 
             services.AddScoped<IRatingService, RatingService>();
             services.AddScoped<IStatementDictionaryService, StatementDictionaryService>();
             services.AddScoped<IStatementPairService, StatementPairService>();
             services.AddScoped<IChallengeService, ChallengeService>();
+            services.AddScoped<IStatementsImportService, StatementsImportService>();
 
             #endregion
             // -------------------------------------------------------------------------------------------------------------------------- >8
@@ -81,13 +85,14 @@ namespace Vocab.WebApi
             app.UseForwardedHeaders();
             app.UseAuthentication();
             app.UseAuthorization();
+            app.UseHangfireDashboard();
 
-            string[] origins = configuration.GetRequiredSection("CorsConfiguration:Origins").Get<string[]>()
-                .ThrowIfNull(_ => new NullReferenceException("Конфигурация CORS не получена.")).Value!;
-            app.UseCors(o => o.AllowAnyMethod().AllowAnyHeader().WithOrigins(origins));
+            app.UseCors(o => o.AllowAnyMethod().AllowAnyHeader()
+            .WithOrigins(configuration.GetRequiredSection("CorsConfiguration:Origins").Get<string[]>() ?? []));
 
             app.UseWebSockets();
             app.MapControllers().RequireAuthorization();
+            app.MapHangfireDashboard();
 
             if (isDevelopment is true)
             {

@@ -56,35 +56,6 @@ namespace Vocab.Infrastructure.Services
             return ResultVocab.Success().AddValue(statementDictionaries);
         }
 
-        public Task<ResultVocab<ImportStatementsResult>> ImportStatements(Guid userId, long dictionaryId, Stream stream, string separator)
-        {
-#warning здесь добавить hangfire реализацию
-            /* userId.Throw().IfDefault();
-             dictionaryId.Throw().IfDefault();
-             stream.ThrowIfNull();
-
-             if (!await context.StatementDictionaries.AnyAsync(x => x.OwnerId == userId && x.Id == dictionaryId))
-             {
-                 return ResultVocab.Fail("Словарь не найден.").AddValue(default(ImportStatementsResult));
-             }
-
-             ParseStatementsHelper importStatementsHelper = new(stream, dictionaryId, separator);
-             var helperResult = await importStatementsHelper.ParseDocument();
-
-
-             if (helperResult.Success is false || helperResult.Value is null)
-             {
-                 return ResultVocab.Fail("Ошибка при парсинге.").AddValue(default(ImportStatementsResult)).AddInnerResult(helperResult);
-             }
-
-             await context.StatementPairs.AddRangeAsync(helperResult.Value.StatementPairs);
-             ResultVocab dbSaveResult = await context.TrySaveChangesAsync();
-
-             ImportStatementsResult importStatementsResult = new(helperResult.Value.StatementPairs.Count, helperResult.Value.FailedStatementPairs);
-             return ResultVocab.Ok("Выражения импортированы успешно.").AddValue(importStatementsResult).AddInnerResult(dbSaveResult);*/
-            throw new NotImplementedException();
-        }
-
         public async Task<ResultVocab<long>> Add(Guid userId, string name)
         {
             userId.Throw().IfDefault();
