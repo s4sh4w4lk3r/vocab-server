@@ -84,7 +84,7 @@ namespace Vocab.WebApi.Controllers
         public async Task<ActionResult<StatementPair[]>> GetStatementPairsArray(long dictionaryId, [FromQuery] int offset = 0)
         {
             Guid userGuid = this.GetUserGuid();
-            var result = await statementPairService.GetDictionaryStatementPairs(userGuid, dictionaryId, offset);
+            var result = await statementPairService.GetStatements(userGuid, dictionaryId, offset);
             return result.Match(value => Ok(value));
         }
     }

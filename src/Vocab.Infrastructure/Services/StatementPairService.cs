@@ -87,19 +87,19 @@ namespace Vocab.Infrastructure.Services
             return statementPair is not null ? ResultVocab.Success().AddValue(statementPair) : ResultVocab.Failure(StatementPairErrors.NotFound).AddValue<StatementPair>(default);
         }
 
-        public async Task<ResultVocab<StatementPair[]>> GetDictionaryStatementPairs(Guid userId, long dictionaryId, int offset)
+        public async Task<ResultVocab<StatementPair[]>> GetStatements(Guid userId, long dictionaryId, int offset)
         {
             userId.Throw().IfDefault();
             dictionaryId.Throw().IfDefault();
             offset.Throw().IfNegative();
 
-            const int STATEMENT_PAIRS_LIMIT = 100;
+            const int STATEMENTS_LIMIT = 100;
 
             StatementPair[] statementPairs = await context.StatementPairs.AsNoTracking()
                 .Where(x => x.StatementsDictionaryId == dictionaryId && x.StatementsDictionary!.OwnerId == userId)
-                .OrderBy(x => x.Source).Skip(offset).Take(STATEMENT_PAIRS_LIMIT).ToArrayAsync();
+                .OrderBy(x => x.Source).Skip(offset).Take(STATEMENTS_LIMIT).ToArrayAsync();
 
-            return ResultVocab.Success().AddValue(statementPairs);
+            return statementPairs.LongLength > 0 ? ResultVocab.Success().AddValue(statementPairs) : ResultVocab.Failure(StatementPairErrors.NotFound).AddValue < StatementPair[] >(default);
         }
     }
 }

@@ -27,6 +27,7 @@
             return new ResultVocab<TValue>
             {
                 IsSuccess = this.IsSuccess,
+                Error = this.Error,
                 Value = value
             };
         }
