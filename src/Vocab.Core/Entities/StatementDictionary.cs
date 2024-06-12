@@ -5,9 +5,9 @@ namespace Vocab.Core.Entities
     public class StatementDictionary() : IEntity
     {
         public required long Id { get; init; }
-        public required string Name { get; init; }
+        public required string Name { get; set; }
         public required Guid OwnerId { get; init; }
-        public required DateTime LastModified { get; init; }
+        public required DateTime LastModified { get; set; }
 
         public const int MAX_NAME_LENGTH = 256;
         public ICollection<StatementPair> StatementPairs { get; set; } = new HashSet<StatementPair>();

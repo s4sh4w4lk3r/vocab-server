@@ -10,15 +10,15 @@ namespace Vocab.Core.Entities
     public class StatementPair(): IEntity
     {
         public required long Id { get; init; }
-        public required string Source { get; init; }
-        public required string Target { get; init; }
-        public required StatementCategory StatementCategory { get; init; } = StatementCategory.None;
+        public required string Source { get; set; }
+        public required string Target { get; set; }
+        public required StatementCategory StatementCategory { get; set; } = StatementCategory.None;
 
         /// <summary>
         /// Уровень знания перевода. Может принимать значение от 1 (вкл.) до 5 (вкл.).
         /// </summary>
         public int GuessingLevel { get; private set; } = MIN_GUESSING_LEVEL;
-        public required DateTime LastModified { get; init; }
+        public required DateTime LastModified { get; set; }
 
         public required long StatementsDictionaryId { get; init; }
         [JsonIgnore] public StatementDictionary? StatementsDictionary { get; init; }
