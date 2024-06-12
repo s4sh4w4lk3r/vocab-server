@@ -24,6 +24,7 @@ namespace Vocab.Infrastructure.Services
             }
 
             string jobId = BackgroundJob.Enqueue(() => Perform(dictionaryId, documentBase64, separator));
+
             return ResultVocab.Success().AddValue(jobId);
         }
 
@@ -96,7 +97,7 @@ namespace Vocab.Infrastructure.Services
             }
 
 
-            return ResultVocab.Success().AddValue<List<StatementPair>>(statementPairs); ;
+            return ResultVocab.Success().AddValue(statementPairs); ;
         }
 
         private static bool TryConvertBase64ToUtf8(string base64, out string utf8Str)

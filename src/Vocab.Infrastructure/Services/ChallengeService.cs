@@ -72,7 +72,10 @@ namespace Vocab.Infrastructure.Services
                     return ResultVocab.Failure(ChallengeErrors.ResponseTimeout);
                 }
 
-                string message = Encoding.UTF8.GetString(buffer, 0, buffer.Length).TrimEnd('\0');
+                string message = Encoding.UTF8
+                    .GetString(buffer, 0, buffer.Length)
+                    .TrimEnd('\0');
+
                 var result = await ratingService.HandleAnswer(userId, challengeStatementsPair.StatementsPairId, message);
 
                 if (result.IsSuccess && result.Value is not null)
@@ -125,7 +128,9 @@ namespace Vocab.Infrastructure.Services
 
             StatementPair[] statementPairs = await context.StatementPairs
                 .Where(sp => sp.StatementsDictionary!.Id == dictionaryId && sp.StatementsDictionary.OwnerId == userId)
-                .OrderBy(sp => sp.GuessingLevel).Take(count: gameLength).ToArrayAsync();
+                .OrderBy(sp => sp.GuessingLevel)
+                .Take(count: gameLength)
+                .ToArrayAsync();
 
             if (statementPairs is { Length: < MIN_WORDS_REQUIRED })
             {

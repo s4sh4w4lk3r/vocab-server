@@ -38,7 +38,9 @@ namespace Vocab.Infrastructure.Services
             statementPairId.Throw().IfDefault();
 
             int rowsDeleted = await context.StatementPairs
-                .Where(sp => sp.StatementsDictionary!.OwnerId == userId && sp.Id == statementPairId).ExecuteDeleteAsync();
+                .Where(sp => sp.StatementsDictionary!.OwnerId == userId && sp.Id == statementPairId)
+                .ExecuteDeleteAsync();
+
             return rowsDeleted == 1 ? ResultVocab.Success() : ResultVocab.Failure(StatementPairErrors.NotFound);
         }
 
@@ -83,7 +85,9 @@ namespace Vocab.Infrastructure.Services
             userId.Throw().IfDefault();
             statementPairId.Throw().IfDefault();
 
-            StatementPair? statementPair = await context.StatementPairs.SingleOrDefaultAsync(x => x.Id == statementPairId && x.StatementsDictionary!.OwnerId == userId);
+            StatementPair? statementPair = await context.StatementPairs
+                .SingleOrDefaultAsync(x => x.Id == statementPairId && x.StatementsDictionary!.OwnerId == userId);
+
             return statementPair is not null ? ResultVocab.Success().AddValue(statementPair) : ResultVocab.Failure(StatementPairErrors.NotFound).AddValue<StatementPair>(default);
         }
 
@@ -95,11 +99,14 @@ namespace Vocab.Infrastructure.Services
 
             const int STATEMENTS_LIMIT = 100;
 
-            StatementPair[] statementPairs = await context.StatementPairs.AsNoTracking()
+            StatementPair[] statementPairs = await context.StatementPairs
+                .AsNoTracking()
                 .Where(x => x.StatementsDictionaryId == dictionaryId && x.StatementsDictionary!.OwnerId == userId)
                 .OrderBy(x => x.Source).Skip(offset).Take(STATEMENTS_LIMIT).ToArrayAsync();
 
-            return statementPairs.LongLength > 0 ? ResultVocab.Success().AddValue(statementPairs) : ResultVocab.Failure(StatementPairErrors.NotFound).AddValue < StatementPair[] >(default);
+            return statementPairs.LongLength > 0 ? ResultVocab.Success().AddValue(statementPairs) : ResultVocab.Failure(StatementPairErrors.NotFound).AddValue<StatementPair[]>(default);
+        }
+
         }
     }
 }
