@@ -20,7 +20,10 @@ namespace Vocab.WebApi.Controllers
             Guid userId = this.GetUserGuid();
 
             var result = await statementDictionaryService.Add(userId, name);
-            return result.Match(onSuccess: id => Created("", id));
+            return result.Match(onSuccess: id => CreatedAtRoute(
+                routeName: nameof(GetDictionary),
+                routeValues: new { dictionaryId = id },
+                value: null));
         }
 
 
@@ -58,10 +61,10 @@ namespace Vocab.WebApi.Controllers
             return result.Match(jobid => Accepted("", result.Value));
         }
 
-        [HttpGet, Route("{dictionaryId:long:min(1)}")]
+        [HttpGet, Route("{dictionaryId:long:min(1)}", Name = nameof(GetDictionary))]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<ActionResult<StatementDictionary>> GetById(long dictionaryId)
+        public async Task<ActionResult<StatementDictionary>> GetDictionary(long dictionaryId)
         {
             Guid userId = this.GetUserGuid();
             var result = await statementDictionaryService.GetById(userId, dictionaryId);

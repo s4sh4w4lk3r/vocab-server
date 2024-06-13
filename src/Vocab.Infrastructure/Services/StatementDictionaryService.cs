@@ -104,6 +104,5 @@ namespace Vocab.Infrastructure.Services
 
             return rowsUpdated == 1 ? ResultVocab.Success() : ResultVocab.Failure(StatementDictionaryErrors.NotFound);
         }
-
     }
 }

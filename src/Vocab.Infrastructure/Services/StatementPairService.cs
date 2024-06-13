@@ -23,9 +23,9 @@ namespace Vocab.Infrastructure.Services
                 return ResultVocab.Failure(StatementPairErrors.Validation(valResult)).AddValue<long>(default);
             }
 
-            if (await context.StatementDictionaries.AnyAsync(sd => sd.OwnerId == userId && sd.Id == statementPair.StatementsDictionaryId))
+            if (await context.StatementDictionaries.AnyAsync(sd => sd.OwnerId == userId && sd.Id == statementPair.StatementsDictionaryId) is false)
             {
-                return ResultVocab.Failure(StatementPairErrors.NotFound).AddValue<long>(default);
+                return ResultVocab.Failure(StatementDictionaryErrors.NotFound).AddValue<long>(default);
             }
 
             await context.StatementPairs.AddAsync(statementPair);
