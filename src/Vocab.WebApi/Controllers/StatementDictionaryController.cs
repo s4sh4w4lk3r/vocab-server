@@ -74,10 +74,13 @@ namespace Vocab.WebApi.Controllers
         [HttpGet, Route("")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<ActionResult<StatementDictionary[]>> GetDictionariesArray([FromQuery] int offset = 0, [FromQuery] bool appendTopStatements = false)
+        public async Task<ActionResult<StatementDictionary[]>> GetDictionariesArray([FromQuery] int offset = 0, [FromQuery] bool appendTopStatements = false, [FromQuery] string? searchQuery = null)
         {
             Guid userId = this.GetUserGuid();
-            var result = await statementDictionaryService.GetUserDictionaries(userId, appendTopStatements, offset);
+            var result = string.IsNullOrWhiteSpace(searchQuery) is true
+                ? await statementDictionaryService.GetUserDictionaries(userId, appendTopStatements, offset)
+                : await statementDictionaryService.SearchByName(userId, searchQuery, appendTopStatements, offset);
+
             return result.Match(value => Ok(value));
         }
 

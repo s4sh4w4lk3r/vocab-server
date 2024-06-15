@@ -11,6 +11,7 @@ namespace Vocab.Application.Abstractions.Services
         public Task<ResultVocab<StatementDictionary[]>> GetUserDictionaries(Guid userId, bool appendTopStatements, int offset);
 
         public Task<ResultVocab> SetName(Guid userId, long dictionaryId, string name);
+        public Task<ResultVocab<StatementDictionary[]>> SearchByName(Guid userId, string name, bool appendSomeTopStatements, int offset);
 
     }   
 }

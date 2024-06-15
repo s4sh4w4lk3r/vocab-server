@@ -102,9 +102,40 @@ namespace Vocab.Infrastructure.Services
                 .Where(sd => sd.OwnerId == userId && sd.Id == dictionaryId)
                 .ExecuteUpdateAsync(sd => sd
                     .SetProperty(p => p.Name, name)
-                    .SetProperty(p=>p.LastModified, DateTime.UtcNow));
+                    .SetProperty(p => p.LastModified, DateTime.UtcNow));
 
             return rowsUpdated == 1 ? ResultVocab.Success() : ResultVocab.Failure(StatementDictionaryErrors.NotFound);
+        }
+
+        public async Task<ResultVocab<StatementDictionary[]>> SearchByName(Guid userId, string name, bool appendSomeTopStatements, int offset)
+        {
+            userId.Throw().IfDefault();
+            name.ThrowIfNull().IfEmpty().IfWhiteSpace();
+            offset.Throw().IfNegative();
+
+            StatementDictionary[] dictionaries;
+
+            IQueryable<StatementDictionary> query = context.StatementDictionaries
+                    .AsNoTracking()
+                    .Where(x => x.OwnerId == userId && x.Name.Contains(name))
+                    .OrderBy(x => x.Name)
+                    .Skip(offset)
+                    .Take(NUMBER_OF_DICTIONARIES);
+
+            if (appendSomeTopStatements is true)
+            {
+                dictionaries = await query
+                    .Include(x => x.StatementPairs
+                        .OrderBy(z => z.Source)
+                        .Take(NUMBER_OF_TOP_STATEMENTS))
+                    .ToArrayAsync();
+            }
+            else
+            {
+                dictionaries = await query.ToArrayAsync();
+            }
+
+            return ResultVocab.Success().AddValue(dictionaries);
         }
     }
 }
