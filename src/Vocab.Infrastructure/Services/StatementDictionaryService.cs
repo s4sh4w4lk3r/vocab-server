@@ -11,6 +11,9 @@ namespace Vocab.Infrastructure.Services
 {
     public class StatementDictionaryService(VocabContext context) : IStatementDictionaryService
     {
+        private const int NUMBER_OF_DICTIONARIES = 15;
+        private const int NUMBER_OF_TOP_STATEMENTS = 15;
+
         public async Task<ResultVocab> Delete(Guid userId, long dictionaryId)
         {
             userId.Throw().IfDefault();
@@ -30,7 +33,7 @@ namespace Vocab.Infrastructure.Services
 
             StatementDictionary? statementDictionary = await context.StatementDictionaries
                 .AsNoTracking()
-                .SingleOrDefaultAsync(x=>x.Id == dictionaryId && x.OwnerId == userId);
+                .SingleOrDefaultAsync(x => x.Id == dictionaryId && x.OwnerId == userId);
 
             return statementDictionary is not null ? ResultVocab.Success().AddValue(statementDictionary) : ResultVocab.Failure(StatementDictionaryErrors.NotFound).AddValue<StatementDictionary>(default);
         }
@@ -40,30 +43,29 @@ namespace Vocab.Infrastructure.Services
             userId.Throw().IfDefault();
             offset.Throw().IfNegative();
 
-            const int NUMBER_OF_DICTIONARIES = 15;
-            const int NUMBER_OF_TOP_STATEMENTS = 15;
+            StatementDictionary[] dictionaries;
 
-            StatementDictionary[] statementDictionaries;
+            IQueryable<StatementDictionary> query = context.StatementDictionaries
+                    .AsNoTracking()
+                    .Where(x => x.OwnerId == userId)
+                    .OrderBy(x => x.Name)
+                    .Skip(offset)
+                    .Take(NUMBER_OF_DICTIONARIES);
 
             if (appendSomeTopStatements)
             {
-                statementDictionaries = await context.StatementDictionaries
-                    .AsNoTracking().Where(x => x.OwnerId == userId)
-                    .OrderBy(x => x.Name).Skip(offset).Take(NUMBER_OF_DICTIONARIES)
-                    .Include(x=>x.StatementPairs.OrderBy(z => z.Source).Take(NUMBER_OF_TOP_STATEMENTS))
+                dictionaries = await query
+                    .Include(x => x.StatementPairs
+                        .OrderBy(z => z.Source)
+                        .Take(NUMBER_OF_TOP_STATEMENTS))
                     .ToArrayAsync();
             }
             else
             {
-                statementDictionaries = await context.StatementDictionaries
-                    .AsNoTracking()
-                    .Where(x => x.OwnerId == userId)
-                    .OrderBy(x=>x.Name).Skip(offset)
-                    .Take(NUMBER_OF_DICTIONARIES)
-                    .ToArrayAsync();
+                dictionaries = await query.ToArrayAsync();
             }
 
-            return ResultVocab.Success().AddValue(statementDictionaries);
+            return ResultVocab.Success().AddValue(dictionaries);
         }
 
         public async Task<ResultVocab<long>> Add(Guid userId, string name)
