@@ -26,7 +26,7 @@ namespace Vocab.WebApi.Extensions
             try
             {
                 HttpResponseMessage response = await httpClient.GetAsync(kcUri);
-                response.IsSuccessStatusCode.Throw(_ => new InvalidOperationException($"{kcExceptionMessage} Статусный код: {response.StatusCode}")).IfFalse();
+                response.IsSuccessStatusCode.Throw(_ => new InvalidOperationException($"{kcExceptionMessage} Статусный код: {(int)response.StatusCode}")).IfFalse();
             }
             catch (HttpRequestException ex)
             {

@@ -47,7 +47,7 @@ namespace Vocab.WebApi
             // -------------------------------------------------------------------------------------------------------------------------- >8
 
             services.AddControllers();
-            services.AddVocabDbContext(connectionString: configuration.GetConnectionString("SqlServer")!, 
+            services.AddVocabDbContext(connectionString: configuration.GetConnectionString("SqlServer")!,
                 sensitiveDataLoggingEnabled: isDevelopment);
 
             services.AddKeycloakWebApiAuthentication(configuration);
@@ -58,7 +58,7 @@ namespace Vocab.WebApi
 
             services.AddSwaggerVocab(kcUri);
             services.AddVocabHangfire(configuration);
-            
+
 
             services.AddScoped<IRatingService, RatingService>();
             services.AddScoped<IStatementDictionaryService, StatementDictionaryService>();
@@ -87,8 +87,12 @@ namespace Vocab.WebApi
             app.UseAuthorization();
             app.UseHangfireDashboard();
 
-            app.UseCors(o => o.AllowAnyMethod().AllowAnyHeader()
-            .WithOrigins(configuration.GetRequiredSection("CorsConfiguration:Origins").Get<string[]>() ?? []));
+            app.UseCors(o => o
+            .AllowAnyMethod()
+            .AllowAnyHeader()
+            .WithOrigins(configuration
+                .GetRequiredSection("CorsConfiguration:Origins")
+                .Get<string[]>() ?? []));
 
             app.UseWebSockets();
             app.MapControllers().RequireAuthorization();
