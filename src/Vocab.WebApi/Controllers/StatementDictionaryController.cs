@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using System.ComponentModel.DataAnnotations;
 using Vocab.Application.Abstractions.Services;
+using Vocab.Application.Enums;
 using Vocab.Core.Entities;
 using Vocab.WebApi.Extensions;
 using Vocab.WebApi.Models;
@@ -65,21 +66,22 @@ namespace Vocab.WebApi.Controllers
         [HttpGet, Route("{dictionaryId:long:min(1)}", Name = nameof(GetDictionary))]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<ActionResult<StatementDictionary>> GetDictionary(long dictionaryId)
+        public async Task<ActionResult<StatementDictionary>> GetDictionary(long dictionaryId, AppendStatementsAction appendAction = AppendStatementsAction.NotRequired)
         {
             Guid userId = this.GetUserGuid();
-            var result = await statementDictionaryService.GetById(userId, dictionaryId);
+            var result = await statementDictionaryService.GetById(userId, dictionaryId, appendAction);
             return result.Match(value => Ok(value));
         }
 
         [HttpGet, Route("")]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public async Task<ActionResult<StatementDictionary[]>> GetDictionariesArray([FromQuery] int offset = 0, [FromQuery] bool appendTopStatements = false, [FromQuery] string? searchQuery = null)
+        public async Task<ActionResult<StatementDictionary[]>> GetDictionariesArray(
+            [FromQuery] int offset = 0, AppendStatementsAction appendAction = AppendStatementsAction.NotRequired, [FromQuery] string? searchQuery = null)
         {
             Guid userId = this.GetUserGuid();
             var result = string.IsNullOrWhiteSpace(searchQuery) is true
-                ? await statementDictionaryService.GetUserDictionaries(userId, appendTopStatements, offset)
-                : await statementDictionaryService.SearchByName(userId, searchQuery, appendTopStatements, offset);
+                ? await statementDictionaryService.GetUserDictionaries(userId, appendAction, offset)
+                : await statementDictionaryService.SearchByName(userId, searchQuery, appendAction, offset);
 
             return result.Match(value => Ok(value));
         }

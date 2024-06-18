@@ -28,7 +28,6 @@ namespace Vocab.Infrastructure.Services
 
         public async Task<ResultVocab<long>> Add(Guid userId, string name)
         {
-#warning сделать триггеры для ограничения количества вставляемых записей.
             const int MAX_NUMBER_OF_DICTIONARIES = 150;
 
             userId.Throw().IfDefault();
@@ -120,7 +119,8 @@ namespace Vocab.Infrastructure.Services
                     .Skip(offset)
                     .Take(DICTIONARIES_NUMBER_TO_GET);
 
-            StatementDictionary[] dictionaries = await IncludeStatementsConditionally(query, appendAction).ToArrayAsync();
+            query = IncludeStatementsConditionally(query, appendAction);
+            StatementDictionary[] dictionaries = await query.ToArrayAsync();
 
             return ResultVocab.Success().AddValue(dictionaries);
         }
@@ -130,7 +130,7 @@ namespace Vocab.Infrastructure.Services
             switch (appendAction)
             {
                 case AppendStatementsAction.NotRequired:
-                    goto case default;
+                    return query;
 
                 case AppendStatementsAction.Preview:
                     return query.Include(x => x.StatementPairs
@@ -143,7 +143,7 @@ namespace Vocab.Infrastructure.Services
                         .Take((int)AppendStatementsAction.DictionaryOpened));
 
                 default:
-                    return query;
+                    goto case AppendStatementsAction.NotRequired;
             }
         }
     }
