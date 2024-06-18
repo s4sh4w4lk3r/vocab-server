@@ -12,6 +12,8 @@ namespace Vocab.Infrastructure.Services
 {
     public class StatementPairService(VocabContext context) : IStatementPairService
     {
+        private const int MAX_NUMBER_OF_STATEMENTS = 1000;
+
         public async Task<ResultVocab<long>> Add(Guid userId, StatementPair statementPair)
         {
             userId.Throw().IfDefault();
@@ -26,6 +28,11 @@ namespace Vocab.Infrastructure.Services
             if (await context.StatementDictionaries.AnyAsync(sd => sd.OwnerId == userId && sd.Id == statementPair.StatementsDictionaryId) is false)
             {
                 return ResultVocab.Failure(StatementDictionaryErrors.NotFound).AddValue<long>(default);
+            }
+
+            if (await context.StatementPairs.CountAsync(x=>x.StatementsDictionaryId == statementPair.StatementsDictionaryId) > MAX_NUMBER_OF_STATEMENTS)
+            {
+                return ResultVocab.Failure(StatementPairErrors.TooManyStatements).AddValue<long>(default);
             }
 
             await context.StatementPairs.AddAsync(statementPair);

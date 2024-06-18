@@ -15,6 +15,7 @@ namespace Vocab.WebApi.Controllers
         [HttpPost]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status409Conflict)]
         public async Task<ActionResult<long>> Add([FromQuery, Required] string name)
         {
             Guid userId = this.GetUserGuid();
