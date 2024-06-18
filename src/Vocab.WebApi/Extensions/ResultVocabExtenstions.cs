@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Vocab.Application.Enums;
 using Vocab.Application.ValueObjects.Result;
 
 namespace Vocab.WebApi.Extensions

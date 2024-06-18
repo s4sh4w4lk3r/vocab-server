@@ -1,4 +1,4 @@
-﻿namespace Vocab.Application.ValueObjects.Result
+﻿namespace Vocab.Application.Enums
 {
     public enum ErrorType
     {

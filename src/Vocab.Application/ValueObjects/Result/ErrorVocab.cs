@@ -1,4 +1,6 @@
-﻿namespace Vocab.Application.ValueObjects.Result
+﻿using Vocab.Application.Enums;
+
+namespace Vocab.Application.ValueObjects.Result
 {
     public record ErrorVocab(string Code, string Description, ErrorType ErrorType)
     {
