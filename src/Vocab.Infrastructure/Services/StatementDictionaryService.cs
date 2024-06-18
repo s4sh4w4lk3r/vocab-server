@@ -11,7 +11,7 @@ namespace Vocab.Infrastructure.Services
 {
     public class StatementDictionaryService(VocabContext context) : IStatementDictionaryService
     {
-        private const int MAX_NUMBER_OF_DICTIONARIES = 150;
+        
         private const int NUMBER_OF_TOP_STATEMENTS = 15;
 
         public async Task<ResultVocab> Delete(Guid userId, long dictionaryId)
@@ -70,6 +70,8 @@ namespace Vocab.Infrastructure.Services
 
         public async Task<ResultVocab<long>> Add(Guid userId, string name)
         {
+            const int MAX_NUMBER_OF_DICTIONARIES = 150;
+
             userId.Throw().IfDefault();
             name.ThrowIfNull().IfEmpty().IfWhiteSpace();
 

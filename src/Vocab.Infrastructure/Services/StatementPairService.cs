@@ -12,10 +12,11 @@ namespace Vocab.Infrastructure.Services
 {
     public class StatementPairService(VocabContext context) : IStatementPairService
     {
-        private const int MAX_NUMBER_OF_STATEMENTS = 1000;
 
         public async Task<ResultVocab<long>> Add(Guid userId, StatementPair statementPair)
         {
+            const int MAX_NUMBER_OF_STATEMENTS = 1000;
+
             userId.Throw().IfDefault();
             statementPair.ThrowIfNull();
 
