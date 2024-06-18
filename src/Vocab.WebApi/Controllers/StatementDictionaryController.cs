@@ -73,7 +73,6 @@ namespace Vocab.WebApi.Controllers
 
         [HttpGet, Route("")]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<ActionResult<StatementDictionary[]>> GetDictionariesArray([FromQuery] int offset = 0, [FromQuery] bool appendTopStatements = false, [FromQuery] string? searchQuery = null)
         {
             Guid userId = this.GetUserGuid();
@@ -86,7 +85,6 @@ namespace Vocab.WebApi.Controllers
 
         [HttpGet, Route("{dictionaryId:long:min(1)}/statements")]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<ActionResult<StatementPair[]>> GetStatementPairsArray(long dictionaryId, [FromQuery] int offset = 0)
         {
             Guid userGuid = this.GetUserGuid();

@@ -95,7 +95,7 @@ namespace Vocab.Infrastructure.Services
                 .Where(x => x.StatementsDictionaryId == dictionaryId && x.StatementsDictionary!.OwnerId == userId)
                 .OrderBy(x => x.Source).Skip(offset).Take(STATEMENTS_LIMIT).ToArrayAsync();
 
-            return statementPairs.LongLength > 0 ? ResultVocab.Success().AddValue(statementPairs) : ResultVocab.Failure(StatementPairErrors.NotFound).AddValue<StatementPair[]>(default);
+            return ResultVocab.Success().AddValue(statementPairs);
         }
 
         private async Task<ResultVocab> UpdateStatementPair(Guid userId, long statementPairId, Action<StatementPair> action)
