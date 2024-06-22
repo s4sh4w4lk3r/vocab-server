@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using System.ComponentModel.DataAnnotations;
 using Vocab.Application.Abstractions.Services;
 using Vocab.Core.Entities;
 using Vocab.Core.Enums;
@@ -10,33 +11,18 @@ namespace Vocab.WebApi.Controllers
     [Route("statements")]
     public class StatementPairController(IStatementPairService statementPairService) : ControllerBase
     {
-        [HttpPatch, Route("{statementPairId:long:min(1)}/set/source/{sourceValue:length(1, 512)}")]
+        [HttpPatch, Route("{statementPairId:long:min(1)}")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<IActionResult> SetSource(long statementPairId, string sourceValue)
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> PatchStatement(
+            [FromRoute] long statementPairId, 
+            [FromQuery, MaxLength(512)] string? source = default,
+            [FromQuery, MaxLength(512)] string? target = default,
+            [FromQuery] StatementCategory statementCategory = StatementCategory.None)
         {
             Guid userGuid = this.GetUserGuid();
-            var result = await statementPairService.SetSource(userGuid, statementPairId, sourceValue);
-            return result.Match(NoContent);
-        }
-
-        [HttpPatch, Route("{statementPairId:long:min(1)}/set/target/{targetValue:length(1, 512)}")]
-        [ProducesResponseType(StatusCodes.Status204NoContent)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<IActionResult> SetTarget(long statementPairId, string targetValue)
-        {
-            Guid userGuid = this.GetUserGuid();
-            var result = await statementPairService.SetTarget(userGuid, statementPairId, targetValue);
-            return result.Match(NoContent);
-        }
-
-        [HttpPatch, Route("{statementPairId:long:min(1)}/set/category/{categoryValue}")]
-        [ProducesResponseType(StatusCodes.Status204NoContent)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<IActionResult> SetCategory(long statementPairId, StatementCategory categoryValue)
-        {
-            Guid userGuid = this.GetUserGuid();
-            var result = await statementPairService.SetCategory(userGuid, statementPairId, categoryValue);
+            var result = await statementPairService.Patch(userGuid, statementPairId, source, target, statementCategory);
             return result.Match(NoContent);
         }
 
