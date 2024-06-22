@@ -9,7 +9,7 @@ namespace Vocab.WebApi.Controllers
     public class ChallengeController(IChallengeService challengeService) : ControllerBase
     {
 
-        [HttpGet, Route("challenge/{dictionaryId}")]
+        [HttpGet, Route("challenge/{dictionaryId}", Name = nameof(StartChallenge))]
         [ProducesResponseType(StatusCodes.Status101SwitchingProtocols)]
         [ProducesResponseType(StatusCodes.Status502BadGateway)]
         public async Task StartChallenge([FromRoute] long dictionaryId, [FromQuery, Range(25, 50)] int gameLength = 25)

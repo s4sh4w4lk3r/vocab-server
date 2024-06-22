@@ -13,11 +13,11 @@ namespace Vocab.WebApi.Controllers
     public class StatementDictionaryController(IStatementDictionaryService statementDictionaryService, 
         IStatementPairService statementPairService, IStatementsImportService statementsImportService) : ControllerBase
     {
-        [HttpPost]
+        [HttpPost, Route("", Name = nameof(AddDictionary))]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status409Conflict)]
-        public async Task<ActionResult<long>> Add([FromQuery, Required] string name)
+        public async Task<ActionResult<long>> AddDictionary([FromQuery, Required] string name)
         {
             Guid userId = this.GetUserGuid();
 
@@ -29,27 +29,27 @@ namespace Vocab.WebApi.Controllers
         }
 
 
-        [HttpDelete, Route("{dictionaryId:long:min(1)}")]
+        [HttpDelete, Route("{dictionaryId:long:min(1)}", Name = nameof(DeleteDictionary))]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<IActionResult> Delete([FromRoute] long dictionaryId)
+        public async Task<IActionResult> DeleteDictionary([FromRoute] long dictionaryId)
         {
             Guid userId = this.GetUserGuid();
             var result = await statementDictionaryService.Delete(userId, dictionaryId);
             return result.Match(NoContent);
         }
 
-        [HttpPatch, Route("{dictionaryId:long:min(1)}/set/name/{name:length(1, 256)}")]
+        [HttpPatch, Route("{dictionaryId:long:min(1)}", Name = nameof(RenameDictionary))]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<IActionResult> SetName([FromRoute] long dictionaryId, string name)
+        public async Task<IActionResult> RenameDictionary([FromRoute] long dictionaryId, [FromQuery, MaxLength(256)] string name)
         {
             Guid userId = this.GetUserGuid();
             var result = await statementDictionaryService.SetName(userId, dictionaryId, name);
             return result.Match(NoContent);
         }
 
-        [HttpPost, Route("{dictionaryId:long:min(1)}/import")]
+        [HttpPost, Route("{dictionaryId:long:min(1)}/import", Name = nameof(ImportStatements))]
         [ProducesResponseType(StatusCodes.Status202Accepted)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -73,9 +73,9 @@ namespace Vocab.WebApi.Controllers
             return result.Match(value => Ok(value));
         }
 
-        [HttpGet, Route("")]
+        [HttpGet, Route("", Name = nameof(GetDictionaries))]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public async Task<ActionResult<StatementDictionary[]>> GetDictionariesArray(
+        public async Task<ActionResult<StatementDictionary[]>> GetDictionaries(
             [FromQuery] int offset = 0, AppendStatementsAction appendAction = AppendStatementsAction.NotRequired, [FromQuery] string? searchQuery = null)
         {
             Guid userId = this.GetUserGuid();
@@ -86,9 +86,9 @@ namespace Vocab.WebApi.Controllers
             return result.Match(value => Ok(value));
         }
 
-        [HttpGet, Route("{dictionaryId:long:min(1)}/statements")]
+        [HttpGet, Route("{dictionaryId:long:min(1)}/statements", Name = nameof(GetStatementPairs))]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public async Task<ActionResult<StatementPair[]>> GetStatementPairsArray(long dictionaryId, [FromQuery] int offset = 0)
+        public async Task<ActionResult<StatementPair[]>> GetStatementPairs(long dictionaryId, [FromQuery] int offset = 0)
         {
             Guid userGuid = this.GetUserGuid();
             var result = await statementPairService.GetStatements(userGuid, dictionaryId, offset);

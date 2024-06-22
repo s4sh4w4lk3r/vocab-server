@@ -11,11 +11,11 @@ namespace Vocab.WebApi.Controllers
     [Route("statements")]
     public class StatementPairController(IStatementPairService statementPairService) : ControllerBase
     {
-        [HttpPatch, Route("{statementPairId:long:min(1)}")]
+        [HttpPatch, Route("{statementPairId:long:min(1)}", Name = nameof(UpdateStatement))]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> PatchStatement(
+        public async Task<IActionResult> UpdateStatement(
             [FromRoute] long statementPairId, 
             [FromQuery, MaxLength(512)] string? source = default,
             [FromQuery, MaxLength(512)] string? target = default,
@@ -26,35 +26,35 @@ namespace Vocab.WebApi.Controllers
             return result.Match(NoContent);
         }
 
-        [HttpDelete, Route("{statementPairId:long:min(1)}")]
+        [HttpDelete, Route("{statementPairId:long:min(1)}", Name = nameof(DeleteStatement))]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<IActionResult> Delete(long statementPairId)
+        public async Task<IActionResult> DeleteStatement(long statementPairId)
         {
             Guid userGuid = this.GetUserGuid();
             var result = await statementPairService.Delete(userGuid, statementPairId);
             return result.Match(NoContent);
         }
 
-        [HttpPost]
+        [HttpPost, Route("", Name = nameof(AddStatement))]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status409Conflict)]
-        public async Task<ActionResult<long>> Add(StatementPairDto statementPairDto)
+        public async Task<ActionResult<long>> AddStatement(StatementPairDto statementPairDto)
         {
             Guid userGuid = this.GetUserGuid();
             var result = await statementPairService.Add(userGuid, statementPairDto.ToEntity());
 
             return result.Match(id => CreatedAtRoute(
-                routeName: nameof(GetStatementsPair), 
+                routeName: nameof(GetStatements), 
                 routeValues: new { statementPairId = id }, 
                 value: null));
         }
 
-        [HttpGet, Route("{statementPairId:long:min(1)}", Name = nameof(GetStatementsPair))]
+        [HttpGet, Route("{statementPairId:long:min(1)}", Name = nameof(GetStatements))]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<ActionResult<StatementPair>> GetStatementsPair(long statementPairId)
+        public async Task<ActionResult<StatementPair>> GetStatements(long statementPairId)
         {
             Guid userGuid = this.GetUserGuid();
             var result = await statementPairService.GetById(userGuid, statementPairId);
