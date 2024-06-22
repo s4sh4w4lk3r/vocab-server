@@ -56,7 +56,7 @@ namespace Vocab.WebApi.Extensions
                 ErrorType.Validation => StatusCodes.Status400BadRequest,
                 ErrorType.NotFound => StatusCodes.Status404NotFound,
                 ErrorType.Conflict => StatusCodes.Status409Conflict,
-                _ => StatusCodes.Status500InternalServerError
+                _ => StatusCodes.Status400BadRequest,
             };
         }
 
@@ -65,9 +65,9 @@ namespace Vocab.WebApi.Extensions
             return error.ErrorType switch
             {
                 ErrorType.Validation => "Bad Request",
-                ErrorType.NotFound => "NotFound",
+                ErrorType.NotFound => "Not Found",
                 ErrorType.Conflict => "Conflict",
-                _ => "Internal Server Error"
+                _ => "Bad Request"
             };
         }
 
@@ -78,7 +78,7 @@ namespace Vocab.WebApi.Extensions
                 ErrorType.Validation => new BadRequestObjectResult(problemDetails),
                 ErrorType.NotFound => new NotFoundObjectResult(problemDetails),
                 ErrorType.Conflict => new ConflictObjectResult(problemDetails),
-                _ => new StatusCodeResult(StatusCodes.Status500InternalServerError)
+                _ => new BadRequestObjectResult(problemDetails),
             };
         }
 
