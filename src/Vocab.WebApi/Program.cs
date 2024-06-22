@@ -91,7 +91,7 @@ namespace Vocab.WebApi
             .AllowAnyMethod()
             .AllowAnyHeader()
             .WithOrigins(configuration
-                .GetRequiredSection("CorsConfiguration:Origins")
+                .GetRequiredSection("CorsOrigins")
                 .Get<string[]>() ?? []));
 
             app.UseWebSockets();
