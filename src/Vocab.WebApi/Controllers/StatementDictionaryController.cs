@@ -2,11 +2,9 @@
 using Microsoft.AspNetCore.Mvc;
 using System.ComponentModel.DataAnnotations;
 using Vocab.Application.Abstractions.Services;
-using Vocab.Application.Enums;
 using Vocab.Core.Entities;
 using Vocab.WebApi.Extensions;
 using Vocab.WebApi.Models;
-
 namespace Vocab.WebApi.Controllers
 {
     [Route("dictionaries")]
@@ -66,22 +64,25 @@ namespace Vocab.WebApi.Controllers
         [HttpGet, Route("{dictionaryId:long:min(1)}", Name = nameof(GetDictionary))]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<ActionResult<StatementDictionary>> GetDictionary(long dictionaryId, AppendStatementsAction appendAction = AppendStatementsAction.NotRequired)
+        public async Task<ActionResult<StatementDictionary>> GetDictionary(long dictionaryId)
         {
             Guid userId = this.GetUserGuid();
-            var result = await statementDictionaryService.GetById(userId, dictionaryId, appendAction);
+            var result = await statementDictionaryService.GetById(userId, dictionaryId);
             return result.Match(value => Ok(value));
         }
 
         [HttpGet, Route("", Name = nameof(GetDictionaries))]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<ActionResult<StatementDictionary[]>> GetDictionaries(
-            [FromQuery] int offset = 0, AppendStatementsAction appendAction = AppendStatementsAction.NotRequired, [FromQuery] string? searchQuery = null)
+            [FromQuery] string? searchQuery = null,
+            [FromQuery] bool appendStatements = false,
+            [FromQuery] int page = 0)
         {
             Guid userId = this.GetUserGuid();
+
             var result = string.IsNullOrWhiteSpace(searchQuery) is true
-                ? await statementDictionaryService.GetUserDictionaries(userId, appendAction, offset)
-                : await statementDictionaryService.SearchByName(userId, searchQuery, appendAction, offset);
+                ? await statementDictionaryService.GetUserDictionaries(userId, appendStatements, page)
+                : await statementDictionaryService.SearchByName(userId, searchQuery, appendStatements, page);
 
             return result.Match(value => Ok(value));
         }
@@ -90,6 +91,7 @@ namespace Vocab.WebApi.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<ActionResult<StatementPair[]>> GetStatementPairs(long dictionaryId, [FromQuery] int offset = 0)
         {
+#warning сделать пагинацию
             Guid userGuid = this.GetUserGuid();
             var result = await statementPairService.GetStatements(userGuid, dictionaryId, offset);
             return result.Match(value => Ok(value));

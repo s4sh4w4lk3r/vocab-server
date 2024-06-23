@@ -1,7 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Throw;
 using Vocab.Application.Abstractions.Services;
-using Vocab.Application.Enums;
 using Vocab.Application.Validators;
 using Vocab.Application.ValueObjects.Result;
 using Vocab.Application.ValueObjects.Result.Errors;
@@ -12,8 +11,6 @@ namespace Vocab.Infrastructure.Services
 {
     public class StatementDictionaryService(VocabContext context) : IStatementDictionaryService
     {
-        private const int DICTIONARIES_NUMBER_TO_GET = 15;
-
         public async Task<ResultVocab> Delete(Guid userId, long dictionaryId)
         {
             userId.Throw().IfDefault();
@@ -72,79 +69,61 @@ namespace Vocab.Infrastructure.Services
             return rowsUpdated == 1 ? ResultVocab.Success() : ResultVocab.Failure(StatementDictionaryErrors.NotFound);
         }
 
-        public async Task<ResultVocab<StatementDictionary>> GetById(Guid userId, long dictionaryId, AppendStatementsAction appendAction)
+
+        public async Task<ResultVocab<StatementDictionary>> GetById(Guid userId, long dictionaryId)
         {
             userId.Throw().IfDefault();
             dictionaryId.Throw().IfDefault();
-            appendAction.Throw().IfOutOfRange();
 
-            IQueryable<StatementDictionary> query = context.StatementDictionaries
+            StatementDictionary? dictionary = await context.StatementDictionaries
                     .AsNoTracking()
-                    .Where(x => x.Id == dictionaryId && x.OwnerId == userId);
-
-            StatementDictionary? dictionary = await IncludeStatementsConditionally(query, appendAction).SingleOrDefaultAsync();
+                    .SingleOrDefaultAsync(x => x.Id == dictionaryId && x.OwnerId == userId);
 
             return dictionary is not null ? ResultVocab.Success().AddValue(dictionary) : ResultVocab.Failure(StatementDictionaryErrors.NotFound).AddValue<StatementDictionary>(default);
         }
 
-        public async Task<ResultVocab<StatementDictionary[]>> GetUserDictionaries(Guid userId, AppendStatementsAction appendAction, int offset)
+        public async Task<ResultVocab<StatementDictionary[]>> GetUserDictionaries(Guid userId, bool appendStatements, int page)
         {
             userId.Throw().IfDefault();
-            offset.Throw().IfNegative();
-            appendAction.Throw().IfOutOfRange();
+            page.Throw().IfNegative();
 
-            IQueryable<StatementDictionary> query = context.StatementDictionaries
+            IQueryable<StatementDictionary> query = context.StatementDictionaries;
+            if (appendStatements is true)
+            {
+                query = query.Include(x => x.StatementPairs.OrderBy(x => x.Source).Take(IStatementDictionaryService.NUMBER_OF_STATEMENTS_TO_INCLUDE));
+            }
+
+            StatementDictionary[] dictionaries = await query
                     .AsNoTracking()
                     .Where(x => x.OwnerId == userId)
-                    .OrderBy(x => x.Name)
-                    .Skip(offset)
-                    .Take(DICTIONARIES_NUMBER_TO_GET);
-
-            StatementDictionary[] dictionaries = await IncludeStatementsConditionally(query, appendAction).ToArrayAsync();
+                    .OrderByDescending(x => x.LastModified)
+                    .Skip(IStatementDictionaryService.PAGE_SIZE * page)
+                    .Take(IStatementDictionaryService.PAGE_SIZE)
+                    .ToArrayAsync();
 
             return ResultVocab.Success().AddValue(dictionaries);
         }
 
-        public async Task<ResultVocab<StatementDictionary[]>> SearchByName(Guid userId, string name, AppendStatementsAction appendAction, int offset)
+        public async Task<ResultVocab<StatementDictionary[]>> SearchByName(Guid userId, string name, bool appendStatements, int page)
         {
             userId.Throw().IfDefault();
-            name.ThrowIfNull().IfEmpty().IfWhiteSpace();
-            offset.Throw().IfNegative();
-            appendAction.Throw().IfOutOfRange();
+            page.Throw().IfNegative();
 
-            IQueryable<StatementDictionary> query = context.StatementDictionaries
+            IQueryable<StatementDictionary> query = context.StatementDictionaries;
+            if (appendStatements is true)
+            {
+                query = query.Include(x => x.StatementPairs.OrderBy(x => x.Source).Take(IStatementDictionaryService.NUMBER_OF_STATEMENTS_TO_INCLUDE));
+            }
+
+            StatementDictionary[] dictionaries = await query
                     .AsNoTracking()
                     .Where(x => x.OwnerId == userId && x.Name.Contains(name))
-                    .OrderBy(x => x.Name)
-                    .Skip(offset)
-                    .Take(DICTIONARIES_NUMBER_TO_GET);
-
-            query = IncludeStatementsConditionally(query, appendAction);
-            StatementDictionary[] dictionaries = await query.ToArrayAsync();
+                    .OrderByDescending(x => x.LastModified)
+                    .Skip(IStatementDictionaryService.PAGE_SIZE * page)
+                    .Take(IStatementDictionaryService.PAGE_SIZE)
+                    .ToArrayAsync();
 
             return ResultVocab.Success().AddValue(dictionaries);
-        }
-
-        private static IQueryable<StatementDictionary> IncludeStatementsConditionally(IQueryable<StatementDictionary> query, AppendStatementsAction appendAction)
-        {
-            switch (appendAction)
-            {
-                case AppendStatementsAction.NotRequired:
-                    return query;
-
-                case AppendStatementsAction.Preview:
-                    return query.Include(x => x.StatementPairs
-                        .OrderBy(z => z.Source)
-                        .Take((int)AppendStatementsAction.Preview));
-
-                case AppendStatementsAction.DictionaryOpened:
-                    return query.Include(x => x.StatementPairs
-                        .OrderBy(z => z.Source)
-                        .Take((int)AppendStatementsAction.DictionaryOpened));
-
-                default:
-                    goto case AppendStatementsAction.NotRequired;
-            }
         }
     }
 }
