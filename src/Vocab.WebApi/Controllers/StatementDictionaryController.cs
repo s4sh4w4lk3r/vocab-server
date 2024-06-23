@@ -89,11 +89,10 @@ namespace Vocab.WebApi.Controllers
 
         [HttpGet, Route("{dictionaryId:long:min(1)}/statements", Name = nameof(GetStatementPairs))]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public async Task<ActionResult<StatementPair[]>> GetStatementPairs(long dictionaryId, [FromQuery] int offset = 0)
+        public async Task<ActionResult<StatementPair[]>> GetStatementPairs(long dictionaryId, [FromQuery] int page = 0)
         {
-#warning сделать пагинацию
             Guid userGuid = this.GetUserGuid();
-            var result = await statementPairService.GetStatements(userGuid, dictionaryId, offset);
+            var result = await statementPairService.GetStatements(userGuid, dictionaryId, page);
             return result.Match(value => Ok(value));
         }
     }
