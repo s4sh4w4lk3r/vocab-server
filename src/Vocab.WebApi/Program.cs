@@ -47,7 +47,7 @@ namespace Vocab.WebApi
             // -------------------------------------------------------------------------------------------------------------------------- >8
 
             services.AddControllers();
-            services.AddVocabDbContext(connectionString: configuration.GetConnectionString("SqlServer")!,
+            services.AddVocabDbContext(connectionString: configuration.GetConnectionString("PostgreSql")!,
                 sensitiveDataLoggingEnabled: isDevelopment);
 
             services.AddKeycloakWebApiAuthentication(configuration);

@@ -1,5 +1,6 @@
 ﻿using System;
 using Microsoft.EntityFrameworkCore.Migrations;
+using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 #nullable disable
 
@@ -16,10 +17,10 @@ namespace Vocab.WebApi.Migrations
                 columns: table => new
                 {
                     Id = table.Column<long>(type: "bigint", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    Name = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: false),
-                    OwnerId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    LastModified = table.Column<DateTime>(type: "datetime2", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    Name = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: false),
+                    OwnerId = table.Column<Guid>(type: "uuid", nullable: false),
+                    LastModified = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -31,12 +32,12 @@ namespace Vocab.WebApi.Migrations
                 columns: table => new
                 {
                     Id = table.Column<long>(type: "bigint", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    Source = table.Column<string>(type: "nvarchar(512)", maxLength: 512, nullable: false),
-                    Target = table.Column<string>(type: "nvarchar(512)", maxLength: 512, nullable: false),
-                    StatementCategory = table.Column<int>(type: "int", nullable: false),
-                    GuessingLevel = table.Column<int>(type: "int", nullable: false, defaultValue: 1),
-                    LastModified = table.Column<DateTime>(type: "datetime2", nullable: false),
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    Source = table.Column<string>(type: "character varying(512)", maxLength: 512, nullable: false),
+                    Target = table.Column<string>(type: "character varying(512)", maxLength: 512, nullable: false),
+                    StatementCategory = table.Column<int>(type: "integer", nullable: false),
+                    GuessingLevel = table.Column<int>(type: "integer", nullable: false, defaultValue: 1),
+                    LastModified = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     StatementsDictionaryId = table.Column<long>(type: "bigint", nullable: false)
                 },
                 constraints: table =>

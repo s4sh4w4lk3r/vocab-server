@@ -1,4 +1,5 @@
 ﻿using Hangfire;
+using Hangfire.PostgreSql;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
 using System.Reflection;
@@ -53,7 +54,7 @@ namespace Vocab.WebApi.Extensions
                 connectionString.ThrowIfNull().IfEmpty().IfWhiteSpace();
 
                 options.EnableSensitiveDataLogging(sensitiveDataLoggingEnabled: sensitiveDataLoggingEnabled);
-                options.UseSqlServer(connectionString, options => options.MigrationsAssembly("Vocab.WebApi"));
+                options.UseNpgsql(connectionString, options => options.MigrationsAssembly("Vocab.WebApi"));
             },
            contextLifetime: ServiceLifetime.Scoped, optionsLifetime: ServiceLifetime.Scoped);
         }
@@ -61,10 +62,10 @@ namespace Vocab.WebApi.Extensions
         public static void AddVocabHangfire(this IServiceCollection services, IConfiguration configuration)
         {
             services.AddHangfire(opts => opts
-                .SetDataCompatibilityLevel(CompatibilityLevel.Version_180)
+                //.SetDataCompatibilityLevel(CompatibilityLevel.Version_180)
                 .UseSimpleAssemblyNameTypeSerializer()
                 .UseRecommendedSerializerSettings()
-                .UseSqlServerStorage(configuration.GetRequiredSection("ConnectionStrings:HangfireConnection").Value));
+                .UsePostgreSqlStorage(c => c.UseNpgsqlConnection(configuration.GetRequiredSection("ConnectionStrings:HangfireConnection").Value)));
 
             services.AddHangfireServer();
         }
