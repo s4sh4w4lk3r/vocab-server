@@ -2,41 +2,41 @@
 {
     public enum StatementCategory
     {
-        None,
+        None = 0,
 
         /// <summary>
         /// Глагол.
         /// </summary>
-        Verb,
+        Verb = 1,
 
         /// <summary>
         /// Существительное
         /// </summary>
-        Noun,
+        Noun = 2,
 
         /// <summary>
         /// Прилагательное.
         /// </summary>
-        Adjective,
+        Adjective = 3,
 
         /// <summary>
         /// Местоимение.
         /// </summary>
-        Pronoun,
+        Pronoun = 4,
 
         /// <summary>
         /// Числительное.
         /// </summary>
-        Numerals,
+        Numerals = 5,
 
         /// <summary>
         /// Предложение
         /// </summary>
-        Sentence,
+        Sentence = 6,
 
         /// <summary>
         /// Другое.
         /// </summary>
-        Other
+        Other = 7
     }
 }
