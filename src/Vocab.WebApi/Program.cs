@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
+using System.Text.RegularExpressions;
 using Throw;
 using Vocab.Application.Abstractions.Services;
 using Vocab.Infrastructure.Persistence;
@@ -15,7 +16,7 @@ using Vocab.WebApi.Extensions;
 
 namespace Vocab.WebApi
 {
-    public class Program
+    public partial class Program
     {
         public static async Task Main(string[] args)
         {
@@ -87,12 +88,14 @@ namespace Vocab.WebApi
             app.UseAuthorization();
             app.UseHangfireDashboard();
 
+
+            string? corsStr = configuration.GetRequiredSection("Cors:Origins").Value;
+            string[] corsArr = !string.IsNullOrEmpty(corsStr) ? CorsOriginsSplitPattern().Matches(corsStr).Select(x => x.Value).ToArray() : [];
+
             app.UseCors(o => o
             .AllowAnyMethod()
             .AllowAnyHeader()
-            .WithOrigins(configuration
-                .GetRequiredSection("CorsOrigins")
-                .Get<string[]>() ?? []));
+            .WithOrigins(corsArr));
 
             app.UseWebSockets();
             app.MapControllers().RequireAuthorization();
@@ -108,6 +111,11 @@ namespace Vocab.WebApi
             app.Run();
             #endregion
         }
+
+        #region RegexCodeGenerators
+        [GeneratedRegex(@"((?>[\w:\/.]+))", RegexOptions.Multiline)]
+        private static partial Regex CorsOriginsSplitPattern(); 
+        #endregion
     }
 }
 // https://github.com/edinSahbaz/clean-api-template?tab=readme-ov-file
