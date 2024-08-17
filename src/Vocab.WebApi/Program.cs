@@ -116,3 +116,4 @@ namespace Vocab.WebApi
     }
 }
 // https://github.com/edinSahbaz/clean-api-template?tab=readme-ov-file
+#warning разобраться с логгированием в докере, подружить kc
