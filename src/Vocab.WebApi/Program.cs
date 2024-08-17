@@ -77,10 +77,7 @@ namespace Vocab.WebApi
             {
                 var sp = scope.ServiceProvider;
 
-                Task ensureDatabaseTask = sp.EnsureDatabaseCanConnect<VocabContext>();
-                Task ensureKeycloakTask = sp.EnsureKeycloakCanConnect(kcUri);
-
-                await Task.WhenAll(ensureDatabaseTask, ensureKeycloakTask);
+                await sp.EnsureDatabaseCanConnect<VocabContext>();
             }
 
             app.UseForwardedHeaders();
