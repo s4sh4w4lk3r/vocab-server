@@ -59,6 +59,7 @@ namespace Vocab.WebApi
 
             services.AddSwaggerVocab(kcUri);
             services.AddVocabHangfire(configuration);
+            services.AddHealthChecks().AddDbContextCheck<VocabContext>();
 
 
             services.AddScoped<IRatingService, RatingService>();
@@ -72,13 +73,6 @@ namespace Vocab.WebApi
             #region App
 
             var app = builder.Build();
-
-            using (var scope = app.Services.CreateScope())
-            {
-                var sp = scope.ServiceProvider;
-
-                await sp.EnsureDatabaseCanConnect<VocabContext>();
-            }
 
             app.UseForwardedHeaders();
             app.UseAuthentication();
@@ -97,6 +91,7 @@ namespace Vocab.WebApi
             app.UseWebSockets();
             app.MapControllers().RequireAuthorization();
             app.MapHangfireDashboard();
+            app.MapHealthChecks("/healthz").RequireHost("localhost:8080").AllowAnonymous();
 
             if (isDevelopment is true)
             {
