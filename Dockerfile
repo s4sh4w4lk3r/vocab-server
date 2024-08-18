@@ -26,12 +26,4 @@ FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
 
-ENV ConnectionStrings__PostgreSql=""
-ENV ConnectionStrings__HangfireConnection=""
-ENV Keycloak__auth-server-url=""
-ENV Keycloak__realm="vocab"
-ENV Keycloak__resource="aspnet"
-ENV Keycloak__credentials__secret="secret"
-ENV Cors__Origins=""
-
 ENTRYPOINT ["dotnet", "Vocab.WebApi.dll"]
