@@ -5,7 +5,6 @@ using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
-using System.Text.RegularExpressions;
 using Throw;
 using Vocab.Application.Abstractions.Services;
 using Vocab.Infrastructure.Persistence;
@@ -16,9 +15,9 @@ using Vocab.WebApi.Extensions;
 
 namespace Vocab.WebApi
 {
-    public partial class Program
+    public class Program
     {
-        public static async Task Main(string[] args)
+        public static void Main(string[] args)
         {
             #region App Builder
 
@@ -51,9 +50,9 @@ namespace Vocab.WebApi
             services.AddVocabDbContext(connectionString: configuration.GetConnectionString("PostgreSql")!,
                 sensitiveDataLoggingEnabled: isDevelopment);
 
-            services.AddKeycloakWebApiAuthentication(configuration);
-            services.AddAuthorization();
+            services.AddKeycloakWebApiAuthentication(configuration, jwt=> jwt.TokenValidationParameters.ValidIssuers = configuration.GetJwtValidIssuers());
 
+            services.AddAuthorization();
             Uri kcUri = new(configuration.GetKeycloakOptions<KeycloakAuthenticationOptions>()
                 ?.KeycloakUrlRealm.ThrowIfNull().IfEmpty().IfWhiteSpace().Value!);
 
@@ -80,13 +79,10 @@ namespace Vocab.WebApi
             app.UseHangfireDashboard();
 
 
-            string? corsStr = configuration.GetRequiredSection("Cors:Origins").Value;
-            string[] corsArr = !string.IsNullOrEmpty(corsStr) ? CorsOriginsSplitPattern().Matches(corsStr).Select(x => x.Value).ToArray() : [];
-
             app.UseCors(o => o
             .AllowAnyMethod()
             .AllowAnyHeader()
-            .WithOrigins(corsArr));
+            .WithOrigins(configuration.GetCorsOrigins()));
 
             app.UseWebSockets();
             app.MapControllers().RequireAuthorization();
@@ -103,12 +99,7 @@ namespace Vocab.WebApi
             app.Run();
             #endregion
         }
-
-        #region RegexCodeGenerators
-        [GeneratedRegex(@"((?>[\w:\/.]+))", RegexOptions.Multiline)]
-        private static partial Regex CorsOriginsSplitPattern(); 
-        #endregion
     }
 }
 // https://github.com/edinSahbaz/clean-api-template?tab=readme-ov-file
-#warning разобраться с логгированием в докере, подружить kc
+#warning разобраться с логгированием в докере
