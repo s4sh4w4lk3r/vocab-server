@@ -19,7 +19,7 @@ namespace Vocab.WebApi.Extensions
                 Title = GetTitle(result.Error),
                 Extensions = new Dictionary<string, object?>()
                 {
-                    { "error", new[] {result.Error } }
+                    { "errors", new[] {result.Error } }
                 }
             };
         }
