@@ -1,7 +1,5 @@
 ﻿using Hangfire;
 using Hangfire.PostgreSql;
-using Keycloak.AuthServices.Authentication;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
 using System.Reflection;
