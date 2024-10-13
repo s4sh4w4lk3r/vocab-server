@@ -90,18 +90,15 @@ namespace Vocab.Infrastructure.Services
             return statementPair is not null ? ResultVocab.Success().AddValue(statementPair) : ResultVocab.Failure(StatementPairErrors.NotFound).AddValue<StatementPair>(default);
         }
 
-        public async Task<ResultVocab<StatementPair[]>> GetStatements(Guid userId, long dictionaryId, int page)
+        public async Task<ResultVocab<StatementPair[]>> GetStatements(Guid userId, long dictionaryId)
         {
             userId.Throw().IfDefault();
             dictionaryId.Throw().IfDefault();
-            page.Throw().IfNegative();
 
             StatementPair[] statementPairs = await context.StatementPairs
                 .AsNoTracking()
                 .Where(x => x.StatementsDictionaryId == dictionaryId && x.StatementsDictionary!.OwnerId == userId)
                 .OrderBy(x => x.Source)
-                .Skip(page * IStatementPairService.PAGE_SIZE)
-                .Take(IStatementPairService.PAGE_SIZE)
                 .ToArrayAsync();
 
             return ResultVocab.Success().AddValue(statementPairs);

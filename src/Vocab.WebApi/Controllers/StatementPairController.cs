@@ -46,15 +46,15 @@ namespace Vocab.WebApi.Controllers
             var result = await statementPairService.Add(userGuid, statementPairDto.ToEntity());
 
             return result.Match(id => CreatedAtRoute(
-                routeName: nameof(GetStatements), 
+                routeName: nameof(GetStatementPair), 
                 routeValues: new { statementPairId = id }, 
                 value: null));
         }
 
-        [HttpGet, Route("{statementPairId:long:min(1)}", Name = nameof(GetStatements))]
+        [HttpGet, Route("{statementPairId:long:min(1)}", Name = nameof(GetStatementPair))]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<ActionResult<StatementPair>> GetStatements(long statementPairId)
+        public async Task<ActionResult<StatementPair>> GetStatementPair(long statementPairId)
         {
             Guid userGuid = this.GetUserGuid();
             var result = await statementPairService.GetById(userGuid, statementPairId);
